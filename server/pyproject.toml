@@ -1,0 +1,9 @@
+[project]
+name = "gatormarket_server"
+version = "0.1.0"
+description = "This is the server/API for the gatormarket application."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.116.1",
+]
