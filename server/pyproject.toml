@@ -1,9 +1,18 @@
 [project]
-name = "gatormarket_server"
+name = "gatormarket-server"
 version = "0.1.0"
-description = "This is the server/API for the gatormarket application."
+description = "Server for GatorMarket!"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "alembic>=1.16.5",
+    "asyncpg>=0.30.0",
+    "fastapi-users[sqlalchemy]>=14.0.1",
     "fastapi[standard]>=0.116.1",
+    "psycopg2-binary>=2.9.10",
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.11.0",
+    "python-multipart>=0.0.20",
+    "sqlalchemy>=2.0.43",
+    "uvicorn>=0.35.0",
 ]
