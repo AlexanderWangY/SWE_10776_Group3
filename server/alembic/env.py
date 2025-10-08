@@ -5,9 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.db.database import Base
-from app.users.models import User
-from app.auth.models import AccessToken
+from app.models import Base, User, AccessToken
 
 _ = User, AccessToken
 

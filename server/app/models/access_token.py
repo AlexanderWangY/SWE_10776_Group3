@@ -6,8 +6,7 @@ from fastapi_users_db_sqlalchemy.access_token import (
 from fastapi_users.authentication.strategy.db import AccessTokenDatabase, DatabaseStrategy
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_async_session
-from app.db.database import Base
-
+from .base import Base
 
 class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, Base):
     pass
