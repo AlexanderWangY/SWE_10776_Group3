@@ -2,6 +2,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import (
     PostgresDsn
 )
+import resend
+import os
 
 
 class Settings(BaseSettings):
@@ -10,6 +12,7 @@ class Settings(BaseSettings):
     auth_secret: str = "CHANGE_ME_TO_A_RANDOM_SECRET"
     cookie_domain: str = "localhost"
     cookie_secure: bool = False
+    resend.api_key = os.environ["RESEND_API_KEY"]
 
     base_url: str = "http://localhost:8080"
     port: int = 8080
