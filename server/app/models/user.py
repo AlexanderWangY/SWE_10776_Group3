@@ -1,4 +1,5 @@
 import uuid
+import resend
 
 from fastapi import Depends
 from fastapi_users import BaseUserManager, UUIDIDMixin
@@ -33,15 +34,21 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     async def on_after_register(self, user, request = None):
         print(f"User {user.id} has registered.")
-        # Send verification email here
         await self.request_verify(user, request)
 
 
     async def on_after_request_verify(self, user, token, _ = None):
         print(f"Verification requested for user {user.id} with token {token}")
         verification_url = f"{settings.base_url}/auth/verify-email?token={token}"
-
         print(f"Verification URL: {verification_url}")
+        params: resend.Emails.SendParams = {
+            "from": "noreply@gatormarket.com",
+            "to": [user.email],
+            "subject": "Verify your email - GatorMarket",
+            "html": f"<p>Please verify your email using the following link: <a href={verification_url}>Click to verify your email</a></p>"
+        }
+        email = resend.Emails.send(params)
+        print(email)
 
     async def on_after_verify(self, user, request = None):
         print(f"User {user.id} has been verified.")
