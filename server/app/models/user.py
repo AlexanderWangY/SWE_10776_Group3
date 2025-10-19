@@ -1,23 +1,22 @@
 import uuid
 import resend
 
+from typing import List
 from fastapi import Depends
 from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String
 from app.db.database import get_async_session
 from .base import Base
 from app.core.config import settings
-
-
-
 class User(SQLAlchemyBaseUserTableUUID, Base):
+    __tablename__ = "user"
     first_name: Mapped[str] = mapped_column(String, nullable=True)
     last_name: Mapped[str] = mapped_column(String, nullable=True)
     phone_number: Mapped[str] = mapped_column(String, nullable=True)
-
+    listings: Mapped[List["Listing"]] = relationship(back_populates="seller", cascade="all, delete-orphan")
 
 async def get_user_db(
     session: AsyncSession = Depends(get_async_session)
