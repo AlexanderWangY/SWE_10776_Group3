@@ -47,11 +47,18 @@ async def verify_email(
                 detail="User is already verified.",
             )
     
-@router.get("/protected-route", tags=["auth"])
-async def protected_route(
+@router.get("/auth/me", tags=["auth"])
+async def get_me(
       user: User = Depends(fastapi_users.current_user())
 ):
-    print(user.hashed_password)
-    return {"message": f"Hello, {user.email}. You have accessed a protected route!"}
+      return {
+            "id": user.id,
+            "email": user.email,
+            "is_verified": user.is_verified,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "is_superuser": user.is_superuser,
+            "phone_number": user.phone_number
+      }
       
       
