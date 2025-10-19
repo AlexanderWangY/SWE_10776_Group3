@@ -1,12 +1,40 @@
-import { Button } from "@heroui/react";
+import { Button, Navbar,
+  NavbarBrand, 
+  NavbarContent, 
+  NavbarItem, 
+  NavbarMenuToggle,
+  NavbarMenu,
+  NavbarMenuItem, Link, 
+  Card, CardHeader, CardBody, CardFooter} from "@heroui/react";
 import logoDark from "./logo-dark.svg";
 import logoLight from "./logo-light.svg";
 
 export function Welcome() {
   return (
-    <div className="h-screen w-full flex justify-center items-center">
-      <Button>Hello</Button>
-    </div>
+    <Card className="max-w-xl mx-auto shadow-2xl shadow-blue-950/100 bg-gradient-to-tr from-zinc-50/80 to-zinc-200/80 rounded-xl p-8 backdrop-blur-sm">
+      <CardHeader className="flex flex-col items-center pb-2">
+        <h1 className="text-blue-950 font-bold text-5xl text-center">
+          Buy. Sell. On. Campus.
+        </h1>
+      </CardHeader>
+
+      <CardBody className="text-center text-gray-800 text-lg font-medium leading-relaxed">
+        Gatormarket is your university peer-to-peer marketplace where students
+        can exchange textbooks, dorm essentials, clothes, and more — all verified
+        with UF Emails for safety and trust.
+      </CardBody>
+
+      <CardFooter className="flex flex-col items-center gap-2 mt-2">
+        <h2>
+          <text className="text-blue-950 font-medium text-2xl mb-1">
+            Explore Listings:
+          </text>
+        </h2>
+        <div>
+          
+        </div>
+      </CardFooter>
+    </Card>
   );
 }
 
