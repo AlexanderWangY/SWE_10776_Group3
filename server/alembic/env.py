@@ -7,9 +7,9 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.models import Base, User, AccessToken
+from app.models import Base, User, AccessToken, Listing
 
-_ = User, AccessToken
+_ = User, AccessToken, Listing
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
