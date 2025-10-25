@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @plugin './hero.ts';
-/* Note: You may need to change the path to fit your project structure */
 @source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 @custom-variant dark (&:is(.dark *));
 
@@ -11,9 +10,25 @@
 
 html,
 body {
-  @apply bg-neutral-50 dark:bg-gray-950;
+  @apply bg-gradient-to-tr from-orange-500 to-blue-500;
 
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
   }
 }
+/* ANIMATIONS I ADDED */
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeup {
+  animation: fadeUp 1s ease-out forwards;
+}
+/* END OF ANIMATIONS */
