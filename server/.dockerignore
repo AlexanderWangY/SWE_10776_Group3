@@ -1,15 +1,14 @@
-.react-router
-build
-node_modules
-README.md
-
-# Ignore Python virtual environments
+# Ignore virtual environments
 .venv
 venv
+
+# Ignore Python cache
 __pycache__
 *.pyc
 *.pyo
 *.pyd
+
+# Ignore database files
 *.db
 *.sqlite3
 
@@ -20,6 +19,6 @@ __pycache__
 .idea
 .DS_Store
 
-# Ignore temporary or local build files
+# Ignore logs and env files
 *.log
 .env
