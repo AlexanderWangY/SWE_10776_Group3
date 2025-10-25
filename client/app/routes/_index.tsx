@@ -6,6 +6,7 @@ import { Button, Navbar,
 import { Welcome } from "../welcome/welcome";
 import type { Route } from "./+types/_index";
 import AppNavbar from "../components/navbar";
+import { useState, useEffect } from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -19,14 +20,24 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Root() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsVisible(true), 50);
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
-    <main className="min-h-screen bg-gradient-to-tr from-orange-500 to-blue-500 flex flex-col">
-      <div>
-      <AppNavbar></AppNavbar>
-      </div>
-      <div className=" pb-5 pt-10 pl-25 pr-25 flex-grow">
-      <Welcome></Welcome>
-      </div>
-    </main>
+    <div
+      className={`min-h-screen w-full pb-4 bg-gradient-to-tr from-orange-500 to-blue-500 flex flex-col transition-opacity duration-1000 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      <AppNavbar />
+
+      <main className="flex flex-col items-center w-full mt-10 px-5 flex-grow">
+        <Welcome />
+      </main>
+    </div>
   );
 }
