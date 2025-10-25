@@ -8,6 +8,7 @@ from .base import Base
 from app.core.config import settings
 from datetime import datetime, timezone
 from app.models.user import User
+from pydantic import BaseModel, ConfigDict
 
 import enum
 class ListingStatus(enum.Enum):
@@ -28,3 +29,15 @@ class Listing(Base):
     status: Mapped[ListingStatus] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
+class ListingResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    seller_id: uuid.UUID
+    title: str
+    description: str
+    price_cents: int
+    status: ListingStatus
+    created_at: datetime
+    updated_at: datetime
