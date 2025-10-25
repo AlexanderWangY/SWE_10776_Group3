@@ -20,6 +20,8 @@ class Settings(BaseSettings):
         'postgresql://postgres:postgres@db:5432/postgres'
     )
 
+    frontend_url: str = "http://localhost:5173"
+
 
 settings = Settings()
 resend.api_key = settings.resend_api_key
