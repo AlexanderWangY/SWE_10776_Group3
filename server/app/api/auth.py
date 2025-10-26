@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from app.auth.backend import fastapi_users, auth_backend
 from app.schemas.user import UserRead, UserCreate
 from app.models.user import get_user_manager, User
 from fastapi_users.manager import BaseUserManager
 from fastapi_users import exceptions, models
+from fastapi.responses import RedirectResponse
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -35,7 +37,7 @@ async def verify_email(
     """
     try:
         user = await user_manager.verify(token)
-        return {"message": "Email verified successfully"}
+        return RedirectResponse(url=f"{settings.frontend_url}/login?verified=True")
     except (exceptions.InvalidVerifyToken, exceptions.UserNotExists):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
