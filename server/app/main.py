@@ -33,6 +33,8 @@ async def auth_http_handler(request: Request, exc: HTTPException):
             return RedirectResponse(url=f"{settings.frontend_url}/login?verified=True")
         elif exc.detail == "Invalid token or user does not exist.":
             return RedirectResponse(url=f"{settings.frontend_url}/register")
+    elif exc.status_code == 401:
+        return RedirectResponse(url=f"{settings.frontend_url}/login")
     return JSONResponse(
         status_code=exc.status_code,
         content={"message": exc.detail},
