@@ -4,6 +4,7 @@ from app.schemas.user import UserRead, UserCreate
 from app.models.user import get_user_manager, User
 from fastapi_users.manager import BaseUserManager
 from fastapi_users import exceptions, models
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -58,7 +59,8 @@ async def get_me(
             "first_name": user.first_name,
             "last_name": user.last_name,
             "is_superuser": user.is_superuser,
-            "phone_number": user.phone_number
+            "phone_number": user.phone_number,
+            "profile_picture": f"{settings.base_url}/static/{user.profile_picture}"
       }
       
       
