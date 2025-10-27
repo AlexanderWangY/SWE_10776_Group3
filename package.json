@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@heroui/react": "^2.8.5",
+    "@types/node": "^24.9.1",
+    "@types/react": "^19.2.2",
+    "axios": "^1.12.2",
+    "pydantic": "^0.0.1-security",
+    "react-router-dom": "^7.9.4",
+    "vite": "^7.1.12",
+    "zod": "^4.1.12"
+  }
+}
