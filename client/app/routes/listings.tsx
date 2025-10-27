@@ -3,6 +3,21 @@ import { useEffect, useState } from "react";
 import { Card, CardHeader, CardBody, CardFooter } from "@heroui/react";
 import AppNavbar from "~/components/navbar";
 import { type Listing } from "~/components/listcard";
+import {z} from "zod";
+
+const listingSchema = z.object({
+  id: z.number(),
+  seller_id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  price_cents: z.number(),
+  status: z.enum(["active", "draft", "sold", "inactive", "archived"]),
+  created_at: z.string(),
+  updated_at: z.string(),
+  image_url: z.string().optional(),
+});
+
+const listingsReponseSchema = z.array(listingSchema);
 
 export default function ListingsPage() {
   const [isVisible, setIsVisible] = useState(false);
@@ -11,24 +26,22 @@ export default function ListingsPage() {
   useEffect(() => {
     const timeout = setTimeout(() => setIsVisible(true), 50);
 
-    // DUMMY LISTINGS FOR NOW //
-    setListings(
-      Array.from({ length: 24 }).map((_, i) => {
-        const statusOptions = ["active", "draft", "sold", "inactive", "archived"] as const;
-        const status = statusOptions[Math.floor(Math.random() * statusOptions.length)];
-        return {
-          id: i + 1,
-          seller_id: `user${i + 1}`,
-          title: `Product ${i + 1}`,
-          description: `This is a brief description of Product ${i + 1}.`,
-          price_cents: Math.floor(Math.random() * 20000) + 1000,
-          status,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          image_url: `https://via.placeholder.com/400x300?text=Product+${i + 1}`,
-        };
-      })
-    );
+    // FETCH LISTINGS FROM API //
+    const fetchListings = async () => {
+      try {
+        const apiURL = import.meta.env.VITE_API_URL;
+        const res = await fetch(`${apiURL}/listings`)
+        if (!res.ok) throw new Error(`Error fetching listings: ${res.status}`);
+        const data = await res.json();
+        const parsedListings = listingsReponseSchema.parse(data);
+        setListings(parsedListings)
+      }
+      catch (err) {
+        console.error("Failed to fetch listings:", err);
+      }
+    };
+
+    fetchListings();
 
     return () => clearTimeout(timeout);
   }, []);
