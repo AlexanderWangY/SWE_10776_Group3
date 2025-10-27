@@ -60,7 +60,7 @@ async def get_me(
             "last_name": user.last_name,
             "is_superuser": user.is_superuser,
             "phone_number": user.phone_number,
-            "profile_picture": f"{settings.base_url}/static/{user.profile_picture}"
+            "profile_picture": f"{settings.base_url}/static/{user.profile_picture}" # Source: https://github.com/fastapi/fastapi/discussions/9430
       }
       
       
