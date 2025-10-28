@@ -5,9 +5,14 @@ import AppNavbar from "~/components/navbar";
 import { type Listing } from "~/components/listcard";
 import {z} from "zod";
 
-const listingSchema = z.object({
+const sellerSchema = z.object({
+  first_name: z.string(),
+  last_name: z.string(),
+  phone_number: z.string(),
+})
+
+export const listingSchema = z.object({
   id: z.number(),
-  seller_id: z.string(),
   title: z.string(),
   description: z.string(),
   price_cents: z.number(),
@@ -15,6 +20,7 @@ const listingSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   image_url: z.string().optional(),
+  seller: sellerSchema
 });
 
 const listingsReponseSchema = z.array(listingSchema);

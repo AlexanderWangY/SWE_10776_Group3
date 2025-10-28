@@ -3,18 +3,7 @@ import { Card, CardHeader, CardBody, CardFooter } from "@heroui/react";
 import { useState, useEffect } from "react";
 import ListingCard, { type Listing } from "~/components/listcard";
 import {z} from "zod";
-
-const listingSchema = z.object({
-  id: z.number(),
-  seller_id: z.string(),
-  title: z.string(),
-  description: z.string(),
-  price_cents: z.number(),
-  status: z.enum(["active", "draft", "sold", "inactive", "archived"]),
-  created_at: z.string(),
-  updated_at: z.string(),
-  image_url: z.string().optional(),
-});
+import { listingSchema } from "~/routes/listings";
 
 const listingsReponseSchema = z.array(listingSchema);
 
