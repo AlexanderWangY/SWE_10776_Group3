@@ -2,64 +2,56 @@
 import { Card, CardHeader, CardBody, CardFooter } from "@heroui/react";
 import { useState, useEffect } from "react";
 import ListingCard, { type Listing } from "~/components/listcard";
+import {z} from "zod";
 
+const listingSchema = z.object({
+  id: z.number(),
+  seller_id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  price_cents: z.number(),
+  status: z.enum(["active", "draft", "sold", "inactive", "archived"]),
+  created_at: z.string(),
+  updated_at: z.string(),
+  image_url: z.string().optional(),
+});
 
-// JUST PLACEHOLDER DUMMY DATA... WE WILL BE PULLING FROM THE BACKEND JUST FOR A CUTE LITTLE AD IN THE FUTURE
-
-const dummyListings: Listing[] = [
-  {
-    id: 1,
-    seller_id: "1",
-    title: "Calculus Textbook",
-    description: "Brand new, 2024 edition. Includes solutions manual.",
-    price_cents: 4500,
-    status: "active",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    image_url: "https://via.placeholder.com/400x300?text=Calculus+Textbook",
-  },
-  {
-    id: 2,
-    seller_id: "2",
-    title: "Dorm Desk Chair",
-    description: "Comfortable ergonomic chair, great condition.",
-    price_cents: 2000,
-    status: "sold",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    image_url: "https://via.placeholder.com/400x300?text=Dorm+Desk+Chair",
-  },
-  {
-    id: 3,
-    seller_id: "3",
-    title: "UF Hoodie",
-    description: "Official UF merchandise, size M, perfect for campus events.",
-    price_cents: 3500,
-    status: "draft",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    image_url: "https://via.placeholder.com/400x300?text=UF+Hoodie",
-  },
-];
-
-// END OF PLACEHOLDER DUMMY DATA
+const listingsReponseSchema = z.array(listingSchema);
 
 // CALLED AT INDEX
 export function Welcome() {
+  const [listings, setListings] = useState<Listing[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % dummyListings.length);
-    }, 4000);
-    return () => clearInterval(interval);
+    const fetchListings = async () => {
+      try {
+        const apiURL = import.meta.env.VITE_API_URL;
+        const res = await fetch(`${apiURL}/listings`)
+        if (!res.ok) throw new Error(`Error fetching listings: ${res.status}`);
+        const data = await res.json();
+        const parsedListings = listingsReponseSchema.parse(data);
+        setListings(parsedListings);
+      }
+      catch (err) {
+        console.error("Failed to fetch listings:", err);
+      }
+    };
+    fetchListings();
   }, []);
 
-  const currentListing = dummyListings[currentIndex];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % listings.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [listings]);
+
+  const currentListing = listings[currentIndex];
 
   const goPrev = () =>
-    setCurrentIndex((prev) => (prev === 0 ? dummyListings.length - 1 : prev - 1));
-  const goNext = () => setCurrentIndex((prev) => (prev + 1) % dummyListings.length);
+    setCurrentIndex((prev) => (prev === 0 ? listings.length - 1 : prev - 1));
+  const goNext = () => setCurrentIndex((prev) => (prev + 1) % listings.length);
 
   return (
     // WE CAN ALWAYS CHANGE THIS SLOGAN AND BLURB
@@ -82,7 +74,11 @@ export function Welcome() {
         
         {/* CAROUSEL LISTINGS */}
         <div className="w-full pt-4">
-          <ListingCard listing={currentListing} />
+          {listings.length > 0 ? (
+            <ListingCard listing={listings[currentIndex]} />
+          ) : (
+            <p className="text-gray-500 text-lg mt-6">Loading listings...</p>
+          )}
         </div>
       </CardBody>
     </Card>
