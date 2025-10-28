@@ -11,7 +11,7 @@ const sellerSchema = z.object({
   phone_number: z.string(),
 })
 
-const listingSchema = z.object({
+export const listingSchema = z.object({
   id: z.number(),
   title: z.string(),
   description: z.string(),
