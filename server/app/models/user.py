@@ -11,6 +11,9 @@ from sqlalchemy import String
 from app.db.database import get_async_session
 from .base import Base
 from app.core.config import settings
+from pydantic import BaseModel, ConfigDict
+from app.schemas.user import UserResponse
+
 class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "user"
     first_name: Mapped[str] = mapped_column(String, nullable=True)

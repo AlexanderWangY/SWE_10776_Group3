@@ -1,11 +1,15 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from app.auth.backend import fastapi_users, auth_backend
-from app.schemas.user import UserRead, UserCreate
+from app.schemas.user import UserRead, UserCreate, UserResponse
 from app.models.user import get_user_manager, User
 from fastapi_users.manager import BaseUserManager
 from fastapi_users import exceptions, models
 from fastapi.responses import RedirectResponse
 from app.core.config import settings
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.database import get_async_session
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 router = APIRouter()
 
@@ -49,18 +53,15 @@ async def verify_email(
                 detail="User is already verified.",
             )
     
-@router.get("/auth/me", tags=["auth"])
+@router.get("/auth/me", tags=["auth"], response_model=UserResponse)
 async def get_me(
-      user: User = Depends(fastapi_users.current_user())
+      user: User = Depends(fastapi_users.current_user()),
+      async_session: AsyncSession = Depends(get_async_session)
 ):
-      return {
-            "id": user.id,
-            "email": user.email,
-            "is_verified": user.is_verified,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "is_superuser": user.is_superuser,
-            "phone_number": user.phone_number
-      }
+      async with async_session as session:
+        statement = select(User).where(User.id == user.id).options(selectinload(User.listings))
+        result = await session.scalars(statement)
+        user_res = result.one()
+        return user_res
       
       

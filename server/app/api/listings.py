@@ -1,13 +1,9 @@
 from fastapi import APIRouter, Depends
-from app.db.database import engine, get_async_session
+from app.db.database import get_async_session
 from typing import Annotated
-from app.models.listing import Listing, ListingResponse
-from app.models.user import User
-from sqlalchemy.ext.asyncio import (
-    async_sessionmaker,
-    create_async_engine,
-    AsyncSession
-)
+from app.models.listing import Listing
+from app.schemas.listing import ListingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
