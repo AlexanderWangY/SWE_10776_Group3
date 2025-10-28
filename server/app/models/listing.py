@@ -30,12 +30,17 @@ class Listing(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
+# Source: https://medium.com/@ajaygohil2563/unlocking-the-power-of-nested-pydantic-schemas-in-fastapi-d7c872423aa4
+class SellerResponse(BaseModel):
+    first_name: str
+    last_name: str
+    phone_number: str
+
 class ListingResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
     id: int
-    seller_id: uuid.UUID
     title: str
+    seller: SellerResponse
     description: str
     price_cents: int
     status: ListingStatus

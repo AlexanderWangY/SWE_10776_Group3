@@ -3,9 +3,14 @@ import React, { useState } from "react";
 
 export type ListingStatus = "draft" | "active" | "sold" | "inactive" | "archived";
 
+export interface Seller {
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+}
+
 export interface Listing {
   id: number;
-  seller_id: string;
   title: string;
   description?: string;
   price_cents: number;
@@ -13,6 +18,7 @@ export interface Listing {
   created_at: string;
   updated_at: string;
   image_url?: string; // IMAGE IS OPTIONAL IN BACKEND
+  seller: Seller;
 }
 
 type ListingCardProps = {
