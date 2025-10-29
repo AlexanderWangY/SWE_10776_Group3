@@ -60,7 +60,8 @@ export default function Register() {
           message: "✅ Account created! Check your GatorMail for the verification link.",
           type: "success",
         });
-        e.currentTarget.reset();
+        const inputs = e.currentTarget.querySelectorAll("input");
+        inputs.forEach((input) => input.value = "");
       } else {
         setNotification({
           message: "Account created, but verification email status unknown. Check your inbox.",
