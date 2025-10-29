@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Button, Card, Form, Input } from "@heroui/react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import BackButton from "~/components/backbutton";
 import api from "../api";
 
@@ -9,12 +9,29 @@ export default function Login() {
   const [isVisible, setIsVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const[notification, setNotification] = useState<{message: string; type?: "success" | "error" | "info"} | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // FADE IN ANIMATION
   useEffect(() => {
     const timeout = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timeout);
   }, []);
+
+  // SHOW SUCCESS MESSAGE IF REDIRECTED FROM VERIFICATION LINK
+  useEffect(() =>{
+    const params = new URLSearchParams(location.search);
+    const verified = params.get("verified");
+
+    if(verified === "true" && !sessionStorage.getItem("verifiedShown")){
+      setNotification({
+        message: "Your email has been successfully verified! You can now log in.",
+        type: "success",
+      });
+      sessionStorage.setItem("verifiedShown", "true");
+    }
+  }, [location.search]);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
