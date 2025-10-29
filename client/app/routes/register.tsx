@@ -57,7 +57,7 @@ export default function Register() {
       // Only show success notification if backend triggered verification email
       if (res.status === 201) {
         setNotification({
-          message: "✅ Account created! Check your GatorMail for the verification link.",
+          message: "Account created! Check your GatorMail for the verification link.",
           type: "success",
         });
         const inputs = e.currentTarget.querySelectorAll("input");

@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import { Card, CardHeader, CardBody, CardFooter } from "@heroui/react";
 import AppNavbar from "~/components/navbar";
 import { type Listing } from "~/components/listcard";
-import {z} from "zod";
+import { z } from "zod";
 
 const sellerSchema = z.object({
   first_name: z.string(),
   last_name: z.string(),
   phone_number: z.string(),
-})
+});
 
 export const listingSchema = z.object({
   id: z.number(),
@@ -20,29 +20,32 @@ export const listingSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   image_url: z.string().optional(),
-  seller: sellerSchema
+  seller: sellerSchema,
 });
 
-const listingsReponseSchema = z.array(listingSchema);
+const listingsResponseSchema = z.array(listingSchema);
 
-export default function ListingsPage() {
+interface ListingsPageProps {
+  user: any | null;
+  setUser: React.Dispatch<React.SetStateAction<any | null>>;
+}
+
+export default function ListingsPage({ user, setUser }: ListingsPageProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
 
   useEffect(() => {
     const timeout = setTimeout(() => setIsVisible(true), 50);
 
-    // FETCH LISTINGS FROM API //
     const fetchListings = async () => {
       try {
         const apiURL = import.meta.env.VITE_API_URL;
-        const res = await fetch(`${apiURL}/listings`)
+        const res = await fetch(`${apiURL}/listings`);
         if (!res.ok) throw new Error(`Error fetching listings: ${res.status}`);
         const data = await res.json();
-        const parsedListings = listingsReponseSchema.parse(data);
-        setListings(parsedListings)
-      }
-      catch (err) {
+        const parsedListings = listingsResponseSchema.parse(data);
+        setListings(parsedListings);
+      } catch (err) {
         console.error("Failed to fetch listings:", err);
       }
     };
@@ -70,10 +73,10 @@ export default function ListingsPage() {
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
-      <AppNavbar />
+      <AppNavbar user={user} setUser={setUser} />
 
       {/* CONTAINER CARD THAT HOLDS THE GRID */}
-      <Card className="w-full max-w-5xl bg-gradient-to-tr from-zinc-50/80 to-zinc-200/80 backdrop-blur-md shadow-2xl rounded-3xl p-8 my-6 animate-fadeup">
+      <Card className="pt-10 w-full max-w-5xl bg-gradient-to-tr from-zinc-50/80 to-zinc-200/80 backdrop-blur-md shadow-2xl rounded-3xl p-8 my-6 animate-fadeup">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {listings.map((listing) => {
             const priceDollars = (listing.price_cents / 100).toFixed(2);

@@ -1,3 +1,5 @@
+"use client";
+import type { Dispatch, SetStateAction } from "react";
 import { useState, useEffect } from "react";
 import {
   Button,
@@ -15,15 +17,41 @@ import {
 } from "@heroui/react";
 import OurLogo from "../components/logo";
 
-export const SearchIcon = ({ size = 24, strokeWidth = 1.5, width, height, ...props }) => (
+type UserType = {
+  first_name?: string;
+  email: string;
+  profile_image?: string;
+};
+
+interface AppNavbarProps {
+  user?: UserType | null;
+  setUser?: Dispatch<SetStateAction<UserType | null>>;
+}
+
+// Typed props for SearchIcon
+interface SearchIconProps {
+  size?: number;
+  strokeWidth?: number;
+  width?: number;
+  height?: number;
+  [key: string]: any;
+}
+
+export const SearchIcon = ({
+  size = 24,
+  strokeWidth = 1.5,
+  width,
+  height,
+  ...props
+}: SearchIconProps) => (
   <svg
     aria-hidden="true"
     fill="none"
     focusable="false"
     height={height || size}
+    width={width || size}
     role="presentation"
     viewBox="0 0 24 24"
-    width={width || size}
     {...props}
   >
     <path
@@ -43,44 +71,15 @@ export const SearchIcon = ({ size = 24, strokeWidth = 1.5, width, height, ...pro
   </svg>
 );
 
-export default function AppNavbar() {
+export default function AppNavbar({ user = null, setUser }: AppNavbarProps) {
   const [pathname, setPathname] = useState("");
-  const [user, setUser] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  // Set current pathname on mount
   useEffect(() => {
     setPathname(window.location.pathname);
   }, []);
 
-  // Fetch current user on mount
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/auth/me`,
-          { credentials: "include" }
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data);
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  // Handle logout
   const handleLogout = async () => {
+    if (!setUser) return; // avoid calling undefined
     await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/auth/logout`, {
       method: "POST",
       credentials: "include",
@@ -89,13 +88,11 @@ export default function AppNavbar() {
     window.location.href = "/";
   };
 
-  if (loading) return null; // wait for user check
-
   return (
     <Navbar className="w-[75%] mx-auto mt-4 px-6 py-4 bg-white/60 backdrop-blur-md shadow-lg rounded-2xl border border-white/10">
       {/* LEFT */}
-      <NavbarContent justify="start">
-        <NavbarBrand>
+      <NavbarContent justify="start" className="flex-wrap">
+        <NavbarBrand className="h-full flex items-center">
           <OurLogo />
         </NavbarBrand>
       </NavbarContent>
