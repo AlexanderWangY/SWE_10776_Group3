@@ -1,9 +1,12 @@
 import uuid
 
 from fastapi_users import schemas
-from pydantic import field_validator, ConfigDict, BaseModel
+from pydantic import field_validator, ConfigDict, BaseModel, computed_field
 from app.models.listing import ListingStatus
 from datetime import datetime
+from functools import property
+from app.core.config import settings
+from app.models.user import User
 
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
@@ -35,3 +38,9 @@ class UserResponse(BaseModel):
     email: str
     is_superuser: bool
     is_verified: bool
+    profile_picture: str
+
+    @computed_field
+    @property
+    def profile_picture_url(self) -> str:
+        return f"{settings.base_url}/static/{self.profile_picture}" # Source: https://github.com/fastapi/fastapi/discussions/9430
