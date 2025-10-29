@@ -16,22 +16,22 @@ export default function About() {
     {
       name: "Alexander Wang",
       role: "Project Manager",
-      img: "/public/alex.jpg",
+      img: "/alex.jpg",
     },
     {
       name: "Evelyn Colon",
       role: "Backend Developer",
-      img: "/public/evelyn.jpg",
+      img: "/evelyn.jpg",
     },
     {
       name: "Kali Schuchhardt",
       role: "Frontend Developer",
-      img: "/public/kali.jpg",
+      img: "/kali.jpg",
     },
     {
       name: "Anders Swenson",
       role: "Full Stack Developer",
-      img: "/public/anders.jpg",
+      img: "/anders.jpg",
     },
   ];
 
