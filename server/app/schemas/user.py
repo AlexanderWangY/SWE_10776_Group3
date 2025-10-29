@@ -4,7 +4,6 @@ from fastapi_users import schemas
 from pydantic import field_validator, ConfigDict, BaseModel, computed_field
 from app.models.listing import ListingStatus
 from datetime import datetime
-from functools import property
 from app.core.config import settings
 from app.models.user import User
 
