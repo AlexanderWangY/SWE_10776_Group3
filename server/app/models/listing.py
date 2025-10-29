@@ -3,12 +3,8 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, DateTime, ForeignKey
-from app.db.database import get_async_session
 from .base import Base
-from app.core.config import settings
 from datetime import datetime, timezone
-from pydantic import BaseModel, ConfigDict
-
 import enum
 class ListingStatus(enum.Enum):
     DRAFT = "draft"

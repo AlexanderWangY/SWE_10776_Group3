@@ -27,15 +27,6 @@ class UserCreate(schemas.BaseUserCreate):
 class UserUpdate(schemas.BaseUserUpdate):
     pass
 
-class UserListingResponse(BaseModel):
-    id: int
-    title: str
-    description: str
-    price_cents: int
-    status: ListingStatus
-    created_at: datetime
-    updated_at: datetime
-
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     first_name: str
@@ -44,4 +35,3 @@ class UserResponse(BaseModel):
     email: str
     is_superuser: bool
     is_verified: bool
-    listings: list[UserListingResponse]

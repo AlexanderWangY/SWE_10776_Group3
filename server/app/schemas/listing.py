@@ -8,11 +8,21 @@ class SellerResponse(BaseModel):
     last_name: str
     phone_number: str
 
-class ListingResponse(BaseModel):
+class UserListingResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     title: str
     seller: SellerResponse
+    description: str
+    price_cents: int
+    status: ListingStatus
+    created_at: datetime
+    updated_at: datetime
+
+class ListingResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    title: str
     description: str
     price_cents: int
     status: ListingStatus

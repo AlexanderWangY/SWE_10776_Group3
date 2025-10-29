@@ -9,7 +9,6 @@ from app.core.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_async_session
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
 router = APIRouter()
 
@@ -59,7 +58,7 @@ async def get_me(
       async_session: AsyncSession = Depends(get_async_session)
 ):
       async with async_session as session:
-        statement = select(User).where(User.id == user.id).options(selectinload(User.listings))
+        statement = select(User).where(User.id == user.id)
         result = await session.scalars(statement)
         user_res = result.one()
         return user_res
