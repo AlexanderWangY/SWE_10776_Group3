@@ -14,6 +14,7 @@ export type User = z.infer<typeof UserSchema>;
 
 export const auth = {
   getUser: async (authCookie: string | null): Promise<User | null> => {
+    console.log("Fetching user with auth cookie:", authCookie);
     const result = await fetch("http://localhost:8080/auth/me", {
       method: "GET",
       headers: {

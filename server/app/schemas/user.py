@@ -1,7 +1,7 @@
 import uuid
 
 from fastapi_users import schemas
-from pydantic import field_validator
+from pydantic import field_validator,BaseModel
 
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
@@ -24,3 +24,9 @@ class UserCreate(schemas.BaseUserCreate):
 
 class UserUpdate(schemas.BaseUserUpdate):
     pass
+
+
+class CustomUserUpdate(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+    phone_number: str | None = None
