@@ -11,11 +11,13 @@ from sqlalchemy import String
 from app.db.database import get_async_session
 from .base import Base
 from app.core.config import settings
+
 class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "user"
     first_name: Mapped[str] = mapped_column(String, nullable=True)
     last_name: Mapped[str] = mapped_column(String, nullable=True)
     phone_number: Mapped[str] = mapped_column(String, nullable=True)
+    profile_picture: Mapped[str] = mapped_column(String, default="images/default_pfp.jpg", nullable=True)
     listings: Mapped[List["Listing"]] = relationship(back_populates="seller", cascade="all, delete-orphan")
 
 async def get_user_db(

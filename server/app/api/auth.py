@@ -7,6 +7,9 @@ from fastapi_users.manager import BaseUserManager
 from fastapi_users import exceptions, models
 from fastapi.responses import RedirectResponse
 from app.core.config import settings
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.database import get_async_session
+from sqlalchemy import select
 
 router = APIRouter()
 
@@ -49,11 +52,10 @@ async def verify_email(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="User is already verified.",
             )
-
-
-@router.get("/auth/me", tags=["auth"])
+    
+@router.get("/auth/me", tags=["auth"], response_model=UserResponse)
 async def get_me(
-      user: User = Depends(fastapi_users.current_user())
+      user: User = Depends(fastapi_users.current_user()),
 ):
       return {
             "id": user.id,

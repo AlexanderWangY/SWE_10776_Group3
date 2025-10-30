@@ -3,6 +3,7 @@ from app.api.auth import router as auth_router
 from app.api.listings import router as listings_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, JSONResponse
 
 origins = [
@@ -26,6 +27,7 @@ app.add_middleware(
 async def read_root():
     return {"message": "Welcome to the FastAPI application!"}
 
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 @app.exception_handler(HTTPException)
 async def auth_http_handler(request: Request, exc: HTTPException):
     if exc.status_code == 400: 

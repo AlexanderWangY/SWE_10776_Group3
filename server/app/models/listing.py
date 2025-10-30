@@ -3,13 +3,8 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, DateTime, ForeignKey
-from app.db.database import get_async_session
 from .base import Base
-from app.core.config import settings
 from datetime import datetime, timezone
-from app.models.user import User
-from pydantic import BaseModel, ConfigDict
-
 import enum
 class ListingStatus(enum.Enum):
     DRAFT = "draft"
@@ -29,20 +24,3 @@ class Listing(Base):
     status: Mapped[ListingStatus] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
-
-# Source: https://medium.com/@ajaygohil2563/unlocking-the-power-of-nested-pydantic-schemas-in-fastapi-d7c872423aa4
-class SellerResponse(BaseModel):
-    first_name: str
-    last_name: str
-    phone_number: str
-
-class ListingResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: int
-    title: str
-    seller: SellerResponse
-    description: str
-    price_cents: int
-    status: ListingStatus
-    created_at: datetime
-    updated_at: datetime
