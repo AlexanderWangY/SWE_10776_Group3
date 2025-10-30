@@ -64,11 +64,12 @@ async def get_me(
             "first_name": user.first_name,
             "last_name": user.last_name,
             "is_superuser": user.is_superuser,
-            "phone_number": user.phone_number
+            "phone_number": user.phone_number,
+            "profile_picture": user.profile_picture,
       }
 
 
-@router.put("/auth/me", tags=["auth"])
+@router.put("/auth/me", tags=["auth"], response_model=UserResponse)
 async def update_me(
     user_update: CustomUserUpdate,
     user: User = Depends(fastapi_users.current_user()),
@@ -94,5 +95,6 @@ async def update_me(
         "first_name": user.first_name,
         "last_name": user.last_name,
         "is_superuser": user.is_superuser,
-        "phone_number": user.phone_number
+        "phone_number": user.phone_number,
+        "profile_picture": user.profile_picture,
     }

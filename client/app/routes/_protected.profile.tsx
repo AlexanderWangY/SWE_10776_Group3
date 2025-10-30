@@ -27,7 +27,7 @@ export default function Profile({}: Route.ComponentProps) {
       <div className="max-w-4xl mx-auto pt-24 flex flex-col gap-4 px-6">
         <Avatar
           name={hasName ? fullName : undefined}
-          src="/public/GatorAvatarTemporary.png"
+          src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
           className="h-24 w-24"
         />
         <div className="flex flex-col gap-1">

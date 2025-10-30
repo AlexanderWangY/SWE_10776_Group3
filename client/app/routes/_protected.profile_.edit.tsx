@@ -112,6 +112,7 @@ export default function ProfileEdit() {
               variant="bordered"
               fullWidth
               defaultValue={user.phone_number ?? undefined}
+              description="Buyers may use this number to contact you about your listings."
             />
 
             <Input

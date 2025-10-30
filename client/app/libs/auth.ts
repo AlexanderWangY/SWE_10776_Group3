@@ -8,6 +8,8 @@ export const UserSchema = z.object({
   last_name: z.string().nullable(),
   is_superuser: z.boolean(),
   phone_number: z.string().nullable(),
+  profile_picture_url: z.url().nullable(),
+  profile_picture: z.string().nullable(),
 });
 
 export type User = z.infer<typeof UserSchema>;

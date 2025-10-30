@@ -38,15 +38,19 @@ class CustomUserUpdate(BaseModel):
     
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    first_name: str
-    last_name: str
-    phone_number: str
+    id: uuid.UUID
+    first_name: str | None
+    last_name: str | None
+    phone_number: str | None
     email: str
     is_superuser: bool
     is_verified: bool
-    profile_picture: str
+    profile_picture: str | None
 
     @computed_field
     @property
-    def profile_picture_url(self) -> str:
+    def profile_picture_url(self) -> str | None:
+        if self.profile_picture is None:
+            return None
+
         return f"{settings.base_url}/static/{self.profile_picture}" # Source: https://github.com/fastapi/fastapi/discussions/9430
