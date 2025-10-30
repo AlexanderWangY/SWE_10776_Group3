@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from app.auth.backend import fastapi_users, auth_backend
 from app.db.database import get_async_session, AsyncSession
-from app.schemas.user import UserRead, UserCreate, CustomUserUpdate
+from app.schemas.user import UserRead, UserCreate, CustomUserUpdate, UserResponse
 from app.models.user import get_user_manager, User
 from fastapi_users.manager import BaseUserManager
 from fastapi_users import exceptions, models
