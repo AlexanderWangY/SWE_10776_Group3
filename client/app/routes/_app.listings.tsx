@@ -65,20 +65,17 @@ export default function ListingsPage({}: Route.ComponentProps) {
       <h1 className="text-2xl font-semibold">Browse Listings</h1>
 
       <div
-        className="
+  className="
     mt-8
     grid
     gap-6
-    grid-cols-[repeat(auto-fit,minmax(200px,1fr))]
+    grid-cols-[repeat(auto-fill,minmax(200px,max-content))]
   "
-      >
-        {listings.map((listing) => (
-          <ListingCard
-            key={listing.id}
-            {...listing}
-          />
-        ))}
-      </div>
+>
+  {listings.map((listing) => (
+    <ListingCard key={listing.id} {...listing} />
+  ))}
+</div>
     </main>
   );
 }

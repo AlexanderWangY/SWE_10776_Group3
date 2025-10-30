@@ -18,7 +18,7 @@ export default function ListingCard({ id, image_url, price_cents, title }: Listi
       shadow="none"
       radius="none"
       onClick={() => navigate(`/listings/${id}`)}
-      className="max-w-[200px] hover:cursor-pointer group"
+      className="md:max-w-[200px] hover:cursor-pointer group"
     >
       <CardBody className="overflow-visible p-0">
         <Image
