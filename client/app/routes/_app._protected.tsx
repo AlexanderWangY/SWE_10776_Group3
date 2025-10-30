@@ -1,16 +1,15 @@
 import { Outlet, redirect, useOutletContext } from "react-router";
-import type { Route } from "./+types/_protected";
-import { auth, type User } from "~/libs/auth";
+import { type User } from "~/libs/auth";
+import { userContext } from "~/context";
+import type { Route } from "./+types/_app._protected";
 
 type ContextType = { user: User };
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const authCookie = request.headers.get("Cookie");
-
-  const user = await auth.getUser(authCookie);
+export async function loader({ context, request }: Route.LoaderArgs) {
+  const user = context.get(userContext);
 
   if (!user) {
-    return redirect("/login");
+    return redirect(`/login?redirectTo=${request.url}`);
   }
 
   return {
@@ -25,6 +24,5 @@ export default function ProtectedLayout({ loaderData }: Route.ComponentProps) {
 }
 
 export function useUser() {
-    return useOutletContext<ContextType>();
-  }
-  
+  return useOutletContext<ContextType>();
+}

@@ -1,7 +1,9 @@
 import { Link } from "react-router";
-import type { Route } from "./+types/_protected.profile";
-import { useUser } from "./_protected";
+
 import { Avatar } from "@heroui/react";
+import type { Route } from "./+types/_app._protected.profile";
+import { useUser } from "./_app._protected";
+
 
 const formatPhoneNumber = (value: string): string => {
   // Remove all non-digit characters
@@ -23,7 +25,7 @@ export default function Profile({}: Route.ComponentProps) {
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
 
   return (
-    <main className="min-h-screen w-full bg-neutral-100">
+    <main className="min-h-screen w-full">
       <div className="max-w-4xl mx-auto pt-24 flex flex-col gap-4 px-6">
         <Avatar
           name={hasName ? fullName : undefined}

@@ -1,4 +1,5 @@
 import z from "zod";
+import api from "~/api";
 
 export const UserSchema = z.object({
   id: z.uuid(),
@@ -15,10 +16,12 @@ export const UserSchema = z.object({
 export type User = z.infer<typeof UserSchema>;
 
 export const auth = {
+  // Server side function to get the current user based on the auth cookie
   getUser: async (authCookie: string | null): Promise<User | null> => {
+    if (!authCookie) return null;
+
     console.log("Fetching user with auth cookie:", authCookie);
-    const result = await fetch("http://localhost:8080/auth/me", {
-      method: "GET",
+    const result = await api.get("/auth/me", {
       headers: {
         Cookie: authCookie || "",
       },
@@ -27,14 +30,12 @@ export const auth = {
     // If unauthorized/forbidden, return null (no user logged in)
     if (result.status === 401 || result.status === 403) return null;
 
-    // Ensure response is JSON
-    const contentType = result.headers.get("Content-Type") || "";
-    if (!contentType.includes("application/json")) {
-      console.warn("Response is not JSON, returning null");
+    if (result.status !== 200) {
+      console.error("Failed to fetch user data:", result);
       return null;
     }
 
-    const parseResult = UserSchema.safeParse(await result.json());
+    const parseResult = UserSchema.safeParse(await result.data);
     if (!parseResult.success) {
       console.error("Failed to parse user data:", parseResult.error);
       return null;
@@ -42,4 +43,9 @@ export const auth = {
 
     return parseResult.data;
   },
+
+  logout: async (): Promise<void> => {
+    await api.post("/auth/logout");
+    return;
+  }
 };

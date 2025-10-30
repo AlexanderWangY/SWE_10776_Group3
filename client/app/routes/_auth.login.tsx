@@ -4,6 +4,19 @@ import { Button, Card, Form, Input } from "@heroui/react";
 import { Link, useNavigate } from "react-router";
 import BackButton from "~/components/backbutton";
 import api from "../api";
+import toast from "react-hot-toast";
+import type { Route } from "./+types/_auth.login";
+
+export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+  const url = new URL(request.url);
+  const verified = url.searchParams.get("verified") || undefined;
+
+  if (verified === "True") {
+    toast.success("Email verified successfully! You can now log in.", {
+      duration: 5000,
+    });
+  }
+}
 
 export default function Login() {
   const [isVisible, setIsVisible] = useState(false);
@@ -61,7 +74,9 @@ export default function Login() {
         <BackButton />
         <Card className="p-6 shadow-lg bg-zinc-100 rounded-2xl animate-fadefloat">
           <header>
-            <h1 className="text-blue-950 font-medium text-2xl mb-1">Welcome Back</h1>
+            <h1 className="text-blue-950 font-medium text-2xl mb-1">
+              Welcome Back
+            </h1>
             <p className="text-blue-950">Login to continue to GatorMarket</p>
           </header>
 
@@ -101,7 +116,10 @@ export default function Login() {
         </Card>
 
         <p className="text-white text-sm fixed bottom-4 left-1/2 -translate-x-1/2">
-          Don't have an account? <Link className="text-white underline" to="/register">Register</Link>
+          Don't have an account?{" "}
+          <Link className="text-white underline" to="/register">
+            Register
+          </Link>
         </p>
       </main>
     </div>

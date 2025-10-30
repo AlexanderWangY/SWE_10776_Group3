@@ -1,14 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Button, Card, Form, Input } from "@heroui/react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import BackButton from "~/components/backbutton";
 import Notification from "~/components/notification";
 import api from "../api";
+import toast from "react-hot-toast";
 
 export default function Register() {
   const [isVisible, setIsVisible] = useState(false);
-  const [notification, setNotification] = useState<{ message: string; type?: "success" | "error" | "info" } | null>(null);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false); // disables submit while registering
 
   useEffect(() => {
@@ -18,7 +19,6 @@ export default function Register() {
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setNotification(null); // clear any previous notifications
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -32,14 +32,14 @@ export default function Register() {
 
     // Validate email
     if (!email.endsWith("@ufl.edu")) {
-      setNotification({ message: "Email must be a valid @ufl.edu address.", type: "error" });
+      toast.error("Please use a valid @ufl.edu email address.");
       setLoading(false);
       return;
     }
 
     // Validate password
     if (password !== confirmPassword) {
-      setNotification({ message: "Passwords do not match!", type: "error" });
+      toast.error("Passwords do not match.");
       setLoading(false);
       return;
     }
@@ -54,25 +54,13 @@ export default function Register() {
         phone_number: phoneNumber,
       });
 
-      // Only show success notification if backend triggered verification email
-      if (res.status === 201) {
-        setNotification({
-          message: "✅ Account created! Check your GatorMail for the verification link.",
-          type: "success",
-        });
-        e.currentTarget.reset();
-      } else {
-        setNotification({
-          message: "Account created, but verification email status unknown. Check your inbox.",
-          type: "info",
-        });
-      }
-    } catch (err: any) {
-      console.error("Registration error:", err.response?.data || err);
-      setNotification({
-        message: err.response?.data?.detail || "Registration failed. Try again.",
-        type: "error",
+      toast.success("We just sent you a verification email. Please check your inbox.", {
+        duration: 10000,
       });
+      navigate("/login");
+    } catch (err: any) {
+      toast.error("Registration failed. Please try again.");
+      console.error("Registration error:", err.response?.data || err);
     } finally {
       setLoading(false);
     }
@@ -84,7 +72,6 @@ export default function Register() {
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
-      {notification && <Notification message={notification.message} type={notification.type} />}
       <main className="max-w-sm w-full px-4 flex flex-col gap-6">
         <BackButton />
         <Card className="p-6 shadow-lg bg-zinc-100 rounded-2xl animate-fadefloat">

@@ -1,46 +1,143 @@
 import { useState, useEffect } from "react";
-import { Button, Navbar, NavbarBrand, NavbarContent, NavbarItem, Link } from "@heroui/react";
+import {
+  Button,
+  Navbar,
+  NavbarBrand,
+  NavbarContent,
+  NavbarItem,
+  Link,
+  DropdownTrigger,
+  Dropdown,
+  Avatar,
+  DropdownMenu,
+  DropdownItem,
+  NavbarMenuToggle,
+  NavbarMenu,
+  NavbarMenuItem,
+} from "@heroui/react";
 import OurLogo from "../components/logo";
+import { useLocation, useNavigate } from "react-router";
+import { auth, type User } from "~/libs/auth";
 
-export default function AppNavbar() {
-  const [pathname, setPathname] = useState("");
+interface MenuItem {
+  label: string;
+  href: string;
+}
 
-  useEffect(() => {
-    setPathname(window.location.pathname);
-  }, []);
+const menuItems: MenuItem[] = [
+  {
+    label: "Home",
+    href: "/",
+  },
+  {
+    label: "About Us",
+    href: "/about",
+  },
+  {
+    label: "Listings",
+    href: "/listings",
+  },
+];
+
+interface Props {
+  user: User | null;
+}
+
+export default function AppNavbar({ user }: Props) {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const [isMenuOpen, _] = useState(false);
+
+  const handleLogout = async () => {
+    await auth.logout();
+    navigate("/login");
+  }
 
   return (
-    <Navbar className="w-[75%] mx-auto mt-4 px-6 py-4 bg-white/60 backdrop-blur-md shadow-lg rounded-2xl border border-white/10" shouldHideOnScroll={false}>
+    <Navbar className="border-b-1 border-neutral-200" maxWidth="xl" shouldHideOnScroll={false} position="static">
       {/* LEFT */}
       <NavbarContent justify="start">
-        <NavbarBrand className="flex items-left text-xl">
-          <OurLogo />
+        <NavbarMenuToggle
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          className="md:hidden"
+        />
+        <NavbarBrand className="flex items-left text-xl text-blue-600 font-bold">
+          GatorMarket
         </NavbarBrand>
       </NavbarContent>
 
-      {/* CENTER */}
-      <NavbarContent className="hidden sm:flex gap-8 text-lg font-medium" justify="center">
-        <NavbarItem isActive={pathname === "/"}>
-          <Link href="/" className="hover:opacity-80 transition-opacity">Home</Link>
-        </NavbarItem>
-        <NavbarItem isActive={pathname === "/about"}>
-          <Link href="/about" className="hover:opacity-80 transition-opacity">About Us</Link>
-        </NavbarItem>
-        <NavbarItem isActive={pathname === "/listings"}>
-          <Link href="/listings" className="hover:opacity-80 transition-opacity">Listings</Link>
-        </NavbarItem>
+      <NavbarContent
+        className="hidden md:flex gap-8 text-lg font-medium"
+        justify="center"
+      >
+        {menuItems.map((item) => (
+          <NavbarItem key={item.href} isActive={pathname === item.href}>
+            <Link
+              href={item.href}
+              color={pathname === item.href ? "primary" : "foreground"}
+              className="hover:opacity-80 transition-opacity"
+            >
+              {item.label}
+            </Link>
+          </NavbarItem>
+        ))}
       </NavbarContent>
 
+      <NavbarMenu>
+        {menuItems.map((item, index) => (
+          <NavbarMenuItem key={`${item.label}-${index}`}>
+            <Link
+              className="w-full"
+              color={pathname === item.href ? "primary" : "foreground"}
+              href={item.href}
+              size="lg"
+            >
+              {item.label}
+            </Link>
+          </NavbarMenuItem>
+        ))}
+      </NavbarMenu>
+
       {/* RIGHT */}
-      <NavbarContent justify="end" className="gap-4 text-lg font-medium">
-        <NavbarItem className="hidden lg:flex" isActive={pathname === "/login"}>
-          <Link href="/login" className="hover:opacity-80 transition-opacity">Login</Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Button as={Link} color="primary" href="/register" variant="flat" className="text-lg px-5 py-2">
-            Sign Up
-          </Button>
-        </NavbarItem>
+      <NavbarContent justify="end">
+        {user ? (
+          <Dropdown placement="bottom-end">
+            <DropdownTrigger>
+              <Avatar
+                isBordered
+                className="transition-transform cursor-pointer"
+                color="primary"
+                disableAnimation
+                name={
+                  `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
+                }
+                size="sm"
+                src={user.profile_picture_url || "https://i.pravatar.cc/150?u=default"}
+              />
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Profile Actions" variant="flat">
+              <DropdownItem key="profile" className="h-14 gap-2" disableAnimation>
+                <p className="font-semibold">Signed in as</p>
+                <p className="font-semibold">{user.email}</p>
+              </DropdownItem>
+              <DropdownItem key="settings" href="/profile">My Profile</DropdownItem>
+              <DropdownItem key="logout" color="danger" onClick={handleLogout}>
+                Log Out
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        ) : (
+          <>
+            <NavbarItem>
+              <Link href="/login">Login</Link>
+            </NavbarItem>
+            <NavbarItem>
+              <Button as={Link} color="primary" href="/register" variant="flat">
+                Sign Up
+              </Button>
+            </NavbarItem>
+          </>
+        )}
       </NavbarContent>
     </Navbar>
   );

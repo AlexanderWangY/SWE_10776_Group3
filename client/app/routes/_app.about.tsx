@@ -37,12 +37,10 @@ export default function About() {
 
   return (
     <div
-      className={`min-h-screen w-full bg-gradient-to-tr from-orange-500 to-blue-500 flex flex-col transition-opacity duration-1000 ${
+      className={`min-h-screen w-full flex flex-col transition-opacity duration-1000 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
-      <AppNavbar />
-
       <main className="flex flex-col items-center w-full mt-10 px-5 flex-grow">
         <Card
           className={`max-w-4xl w-full shadow-2xl shadow-blue-950/50 bg-gradient-to-tr from-zinc-50/80 to-zinc-200/80 
