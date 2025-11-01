@@ -23,25 +23,29 @@ export default function Root() {
         </h2>
 
         <div className="flex flex-row gap-2 mt-6">
-          <Button
-            href="/listings"
-            variant="solid"
-            size="lg"
-            color="primary"
-            className="w-fit"
-            radius="sm"
-          >
-            <Link to="/listings">Browse</Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="lg"
-            color="primary"
-            className="w-fit"
-            radius="sm"
-          >
-            <Link to="/listings/new">Make a Listing</Link>
-          </Button>
+          <Link to="/listings">
+            <Button
+              variant="solid"
+              size="lg"
+              color="primary"
+              className="w-fit"
+              radius="sm"
+            >
+              Browse
+            </Button>
+          </Link>
+
+          <Link to="/listings/new">
+            <Button
+              variant="ghost"
+              size="lg"
+              color="primary"
+              className="w-fit"
+              radius="sm"
+            >
+              Make a Listing
+            </Button>
+          </Link>
         </div>
       </section>
     </main>
