@@ -4,8 +4,11 @@
     "@types/node": "^24.9.1",
     "@types/react": "^19.2.2",
     "axios": "^1.12.2",
+    "fastapi": "^0.0.8",
     "pydantic": "^0.0.1-security",
     "react-router-dom": "^7.9.4",
+    "sqlalchemy": "^10.1.1",
+    "uvicorn": "0.0.1-security",
     "vite": "^7.1.12",
     "zod": "^4.1.12"
   }
