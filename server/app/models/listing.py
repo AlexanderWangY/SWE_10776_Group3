@@ -1,11 +1,10 @@
 import uuid
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, DateTime, ForeignKey
 from .base import Base
 from datetime import datetime, timezone
 import enum
+
 class ListingStatus(enum.Enum):
     DRAFT = "draft"
     ACTIVE = "active"

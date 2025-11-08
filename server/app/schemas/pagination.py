@@ -9,13 +9,11 @@ class SortEnum(Enum):
     DESC = "desc"
 
 class Pagination(BaseModel):
-    perPage: int
-    page: int
-    order: SortEnum
+    page_num: int
+    card_num: int
 
 def pagination_params (
-        page: int = Query(ge=1, required=False, default=1, le=500000),
-        perPage: int = Query(ge=1, le=100, required=False, default=10),
-        order: SortEnum = SortEnum.DESC
+        page_num: int = Query(ge=1, required=False, default=1, le=500000),
+        card_num: int = Query(ge=1, le=100, required=False, default=10),
 ):
-    return Pagination(perPage=perPage, page=page, order=order.value)
+    return Pagination(page_num=page_num, card_num=card_num)
