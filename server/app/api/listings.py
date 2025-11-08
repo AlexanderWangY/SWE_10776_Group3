@@ -20,7 +20,7 @@ async def get_listings(
     pagination: Annotated[Pagination, Depends(pagination_params)],
     async_session: AsyncSession = Depends(get_async_session),
     sort_by: Optional[str] = Query("updated_at", description="Sort field: price, created_at, updated_at"),
-    order: Optional[str] = Query(SortEnum.DESC, description="Sort order: asc or desc")
+    order: Optional[str] = Query(SortEnum.DESC.value, description="Sort order: asc or desc")
 ):
     sort_fields = {
         "id": Listing.title,
@@ -47,7 +47,7 @@ async def get_listings(
                 if pagination.page_num == 1
                 else (pagination.page_num - 1) * pagination.card_num
             )
-            .order_by(asc(sort_column) if sort_order == SortEnum.ASC else desc(sort_column))
+            .order_by(asc(sort_column) if sort_order == SortEnum.ASC.value else desc(sort_column))
         )
         result = await session.scalars(statement)
         listings = result.all()
