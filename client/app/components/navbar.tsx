@@ -112,7 +112,7 @@ export default function AppNavbar({ user }: Props) {
                   `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
                 }
                 size="sm"
-                src={user.profile_picture_url || "https://i.pravatar.cc/150?u=default"}
+                src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
               />
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile Actions" variant="flat">
