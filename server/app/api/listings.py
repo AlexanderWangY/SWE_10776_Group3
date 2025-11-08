@@ -12,6 +12,21 @@ from app.schemas.pagination import Pagination, SortEnum, pagination_params
 
 router = APIRouter()
 
+@router.get("/listings/{listing_id}", tags=["listings"], response_model=UserListingResponse)
+async def get_listing_by_id(
+    listing_id: int,
+    async_session: AsyncSession = Depends(get_async_session)
+):
+    async with async_session as session:
+        statement = (
+            select(Listing)
+            .options(selectinload(Listing.seller))
+            .where(Listing.id == listing_id)
+        )
+        result = await session.scalars(statement)
+        listing = result.one()
+        return listing
+
 # Pagination tutorial: https://www.youtube.com/watch?v=Em6OzzcO9Xo
 # https://stackoverflow.com/questions/74941021/using-sqlalchemy-what-is-a-good-way-to-load-related-object-that-are-were-not-ea
 @router.get("/listings", tags=["listings"], response_model=list[UserListingResponse])
