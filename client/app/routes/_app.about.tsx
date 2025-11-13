@@ -15,12 +15,12 @@ export default function About() {
   const developers = [
     {
       name: "Alexander Wang",
-      role: "Project Manager",
+      role: "Frontend Developer",
       img: "/public/alex.jpg",
     },
     {
       name: "Evelyn Colon",
-      role: "Backend Developer",
+      role: "Project Manager",
       img: "/public/evelyn.jpg",
     },
     {
@@ -30,7 +30,7 @@ export default function About() {
     },
     {
       name: "Anders Swenson",
-      role: "Full Stack Developer",
+      role: "Backend Developer",
       img: "/public/anders.jpg",
     },
   ];
