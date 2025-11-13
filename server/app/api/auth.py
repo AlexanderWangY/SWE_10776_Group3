@@ -52,49 +52,5 @@ async def verify_email(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="User is already verified.",
             )
-    
-@router.get("/auth/me", tags=["auth"], response_model=UserResponse)
-async def get_me(
-      user: User = Depends(fastapi_users.current_user()),
-):
-      return {
-            "id": user.id,
-            "email": user.email,
-            "is_verified": user.is_verified,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "is_superuser": user.is_superuser,
-            "phone_number": user.phone_number,
-            "profile_picture": user.profile_picture,
-      }
 
 
-@router.put("/auth/me", tags=["auth"], response_model=UserResponse)
-async def update_me(
-    user_update: CustomUserUpdate,
-    user: User = Depends(fastapi_users.current_user()),
-    session: AsyncSession = Depends(get_async_session)
-):
-    user: User | None = await session.get(User, user.id)
-    if not user:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found"
-        )
-
-    for k, v in user_update.dict(exclude_unset=True).items():
-        setattr(user, k, v)
-
-    await session.commit()
-    await session.refresh(user)
-
-    return {
-        "id": user.id,
-        "email": user.email,
-        "is_verified": user.is_verified,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "is_superuser": user.is_superuser,
-        "phone_number": user.phone_number,
-        "profile_picture": user.profile_picture,
-    }

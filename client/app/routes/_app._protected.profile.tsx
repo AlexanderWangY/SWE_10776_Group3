@@ -53,7 +53,7 @@ export default function Profile({}: Route.ComponentProps) {
 
   const fetchListings = async () => {
     try {
-      const res = await api.get("/listings/me");
+      const res = await api.get("/profile/listings");
 
       const data = await res.data;
       console.log("Fetched listings:", data);
