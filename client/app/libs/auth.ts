@@ -21,7 +21,7 @@ export const auth = {
     if (!authCookie) return null;
 
     console.log("Fetching user with auth cookie:", authCookie);
-    const result = await api.get("/auth/me", {
+    const result = await api.get("/profile", {
       headers: {
         Cookie: authCookie || "",
       },
