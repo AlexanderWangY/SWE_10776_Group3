@@ -61,7 +61,7 @@ import { useUser } from "./_app._protected";
   
       // Make API call to update user profile here
       try {
-        await api.put("/auth/me", body);
+        await api.put("/profile", body);
       } catch (error) {
         console.error("Failed to update profile:", error);
         return;

@@ -67,14 +67,3 @@ async def get_listings(
         result = await session.scalars(statement)
         listings = result.all()
         return listings
-    
-@router.get("/listings/me", tags=["listings"], response_model=list[ListingResponse])
-async def get_my_listings(
-    async_session: AsyncSession = Depends(get_async_session),
-    user: User = Depends(fastapi_users.current_user()),
-):
-    async with async_session as session:
-        statement = select(Listing).where(Listing.seller_id == user.id)
-        result = await session.scalars(statement)
-        listings = result.all()
-        return listings
