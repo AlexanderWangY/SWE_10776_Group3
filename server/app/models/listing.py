@@ -12,6 +12,24 @@ class ListingStatus(enum.Enum):
     INACTIVE = "inactive"
     ARCHIVED = "archived"
 
+# copilot autocomplete was used to help generate this enum
+class ListingCategory(enum.Enum):
+    ELECTRONICS = "electronics"
+    SCHOOL_SUPPLIES = "school supplies"
+    FURNITURE = "furniture"
+    APPLIANCES = "appliances"
+    CLOTHING = "clothing"
+    TEXTBOOKS = "textbooks"
+    MISCELLANEOUS = "miscellaneous"
+
+# copilot autocomplete was used to help generate this enum
+class ListingCondition(enum.Enum):
+    NEW = "new"
+    LIKE_NEW = "like new"
+    VERY_GOOD = "very good"
+    GOOD = "good"
+    USED = "used"
+
 class Listing(Base):
     __tablename__ = "listing_table"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -22,4 +40,6 @@ class Listing(Base):
     price_cents: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[ListingStatus] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    category: Mapped[ListingCategory] = mapped_column(nullable=True)
+    condition: Mapped[ListingCondition] = mapped_column(nullable=True)

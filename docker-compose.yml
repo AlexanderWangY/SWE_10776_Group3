@@ -23,7 +23,11 @@ services:
     depends_on:
       - db
     volumes:
-      - ./server:/app 
+      # these changes were made by copilot when debugging database migration issues
+      - ./server:/app
+      - venv_data:/app/.venv
 
 volumes:
   postgres_data:
+  # this change was made by copilot when debugging database migration issues
+  venv_data:
