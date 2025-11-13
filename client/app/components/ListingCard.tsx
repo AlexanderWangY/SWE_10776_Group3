@@ -5,9 +5,9 @@ import { useNavigate } from "react-router";
 type ListingCardProps = Pick<
   Listing,
   "id" | "image_url" | "price_cents" | "title"
->;
+> & { className?: string };
 
-export default function ListingCard({ id, image_url, price_cents, title }: ListingCardProps) {
+export default function ListingCard({ id, image_url, price_cents, title, className }: ListingCardProps) {
   const navigate = useNavigate();
   const priceDollars = (price_cents / 100).toFixed(2);
 
@@ -18,7 +18,7 @@ export default function ListingCard({ id, image_url, price_cents, title }: Listi
       shadow="none"
       radius="none"
       onClick={() => navigate(`/listings/${id}`)}
-      className="md:max-w-[200px] hover:cursor-pointer group"
+      className={`hover:cursor-pointer group ${className || "md:max-w-[200px]"}`}
     >
       <CardBody className="overflow-visible p-0">
         <Image
@@ -31,9 +31,7 @@ export default function ListingCard({ id, image_url, price_cents, title }: Listi
         />
       </CardBody>
       <CardFooter className="flex flex-col items-start p-0 mt-1">
-        <b className="md:text-md font-semibold group-hover:underline">
-          {title}
-        </b>
+        <b className="md:text-md font-semibold group-hover:underline">{title}</b>
         <p className="text-default-700 text-sm">${priceDollars}</p>
       </CardFooter>
     </Card>
