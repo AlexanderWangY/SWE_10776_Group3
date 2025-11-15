@@ -1,4 +1,5 @@
 import z from "zod";
+import {getJSON, isInvalidSession} from "~/api";
 import api from "~/api";
 
 export const UserSchema = z.object({
@@ -15,9 +16,27 @@ export const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>;
 
+export async function getCurrentUserSafe(): Promise<User | null> {
+  const result = await getJSON<unknown>("/api/me");
+
+  if (isInvalidSession(result)) {
+    // Optionally, trigger server-side logout endpoint to clear the cookie.
+    // await fetch("/api/logout", { method: "POST", credentials: "include" });
+    return null;
+  }
+
+  const parsed = UserSchema.safeParse(result.data);
+  if (!parsed.success) {
+    // Payload is not a valid user; treat as logged-out.
+    return null;
+  }
+
+  return parsed.data;
+}
+
 export const auth = {
   // Server side function to get the current user based on the auth cookie
-  getUser: async (authCookie: string | null): Promise<User | null> => {
+  getCurrentUserSafe: async (authCookie: string | null): Promise<User | null> => {
     if (!authCookie) return null;
 
     console.log("Fetching user with auth cookie:", authCookie);

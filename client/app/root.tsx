@@ -50,7 +50,7 @@ const userMiddleware: Route.MiddlewareFunction = async ({
   context,
   request,
 }) => {
-  const user = await auth.getUser(request.headers.get("Cookie"));
+  const user = await auth.getCurrentUserSafe(request.headers.get("Cookie"));
   context.set(userContext, user);
 };
 
