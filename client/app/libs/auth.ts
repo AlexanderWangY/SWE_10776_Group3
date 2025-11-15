@@ -22,9 +22,8 @@ export const auth = {
 
     console.log("Fetching user with auth cookie:", authCookie);
     const result = await api.get("/profile", {
-      headers: {
-        Cookie: authCookie || "",
-      },
+      headers: { Cookie: authCookie || "" },
+      validateStatus: () => true,   // <-- THIS prevents Axios from throwing
     });
 
     // If unauthorized/forbidden, return null (no user logged in)
@@ -34,6 +33,8 @@ export const auth = {
       console.error("Failed to fetch user data:", result);
       return null;
     }
+
+    // console.log("User data fetched successfully:", result.data); 
 
     const parseResult = UserSchema.safeParse(await result.data);
     if (!parseResult.success) {
