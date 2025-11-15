@@ -6,29 +6,29 @@ from datetime import datetime, timezone
 import enum
 
 class ListingStatus(enum.Enum):
-    DRAFT = "draft"
-    ACTIVE = "active"
-    SOLD = "sold"
-    INACTIVE = "inactive"
-    ARCHIVED = "archived"
+    DRAFT = "DRAFT"
+    ACTIVE = "ACTIVE"
+    SOLD = "SOLD"
+    INACTIVE = "INACTIVE"
+    ARCHIVED = "ARCHIVED"
 
 # copilot autocomplete was used to help generate this enum
 class ListingCategory(enum.Enum):
-    ELECTRONICS = "electronics"
-    SCHOOL_SUPPLIES = "school supplies"
-    FURNITURE = "furniture"
-    APPLIANCES = "appliances"
-    CLOTHING = "clothing"
-    TEXTBOOKS = "textbooks"
-    MISCELLANEOUS = "miscellaneous"
+    ELECTRONICS = "ELECTRONICS"
+    SCHOOL_SUPPLIES = "SCHOOL_SUPPLIES"
+    FURNITURE = "FURNITURE"
+    APPLIANCES = "APPLIANCES"
+    CLOTHING = "CLOTHING"
+    TEXTBOOKS = "TEXTBOOKS"
+    MISCELLANEOUS = "MISCELLANEOUS"
 
 # copilot autocomplete was used to help generate this enum
 class ListingCondition(enum.Enum):
-    NEW = "new"
-    LIKE_NEW = "like new"
-    VERY_GOOD = "very good"
-    GOOD = "good"
-    USED = "used"
+    NEW = "NEW"
+    LIKE_NEW = "LIKE_NEW"
+    VERY_GOOD = "VERY_GOOD"
+    GOOD = "GOOD"
+    USED = "USED"
 
 class Listing(Base):
     __tablename__ = "listing_table"

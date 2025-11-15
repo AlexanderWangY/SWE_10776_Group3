@@ -25,21 +25,21 @@ def upgrade() -> None:
     bind = op.get_bind()
     # Create enum types first (Autogenerate did not emit CREATE TYPE for add_column)
     listing_category_enum = postgresql.ENUM(
-        'electronics',
-        'school supplies',
-        'furniture',
-        'appliances',
-        'clothing',
-        'textbooks',
-        'miscellaneous',
+        'ELECTRONICS',
+        'SCHOOL_SUPPLIES',
+        'FURNITURE',
+        'APPLIANCES',
+        'CLOTHING',
+        'TEXTBOOKS',
+        'MISCELLANEOUS',
         name='listingcategory'
     )
     listing_condition_enum = postgresql.ENUM(
-        'new',
-        'like new',
-        'very good',
-        'good',
-        'used',
+        'NEW',
+        'LIKE_NEW',
+        'VERY_GOOD',
+        'GOOD',
+        'USED',
         name='listingcondition'
     )
     listing_category_enum.create(bind, checkfirst=True)
