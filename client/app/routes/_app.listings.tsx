@@ -31,6 +31,8 @@ export const listingSchema = z.object({
   updated_at: z.string(),
   image_url: z.string().optional(),
   seller: sellerSchema,
+  category: z.enum(["electronics", "school supplies", "furniture", "appliances", "clothing", "textbooks", "miscellaneous"]).nullable().optional(),
+  condition: z.enum(["new", "like new", "very good", "good", "used"]).nullable().optional(),
 });
 
 const listingsResponseSchema = z.array(listingSchema);
