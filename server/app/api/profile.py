@@ -43,6 +43,7 @@ async def get_me(
       }
 
 
+
 @router.put("/profile", tags=["profile"], response_model=UserResponse)
 async def update_me(
     user_update: CustomUserUpdate,

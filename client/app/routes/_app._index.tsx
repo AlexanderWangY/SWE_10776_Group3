@@ -77,14 +77,15 @@ export default function Root() {
             <div className="w-3/4 h-4 rounded-sm bg-gray-200" />
           </div>
         ) : (
-          <ListingCard
-            key={currentListing.id}
-            id={currentListing.id}
-            title={currentListing.title}
-            price_cents={currentListing.price_cents}
-            image_url={currentListing.image_url}
-            className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[500px]"
-          />
+          <></>
+          // <ListingCard
+          //   key={currentListing.id}
+          //   id={currentListing.id}
+          //   title={currentListing.title}
+          //   price_cents={currentListing.price_cents}
+          //   image_url={currentListing.image_url}
+          //   className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[500px]"
+          // />
         )}
       </div>
     </section>
