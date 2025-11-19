@@ -73,7 +73,7 @@ export default function Profile({}: Route.ComponentProps) {
 
   return (
     <main className="min-h-screen w-full">
-      <div className="max-w-4xl mx-auto pt-24 flex flex-col gap-4 px-6">
+      <div className="max-w-4xl mx-auto pt-16 flex flex-col gap-4 px-6">
         <Avatar
           name={hasName ? fullName : undefined}
           src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
@@ -107,7 +107,7 @@ export default function Profile({}: Route.ComponentProps) {
         </div>
 
         {/* LISTINGS SECTION */}
-        <div className="mt-12 flex flex-col gap-3">
+        <div className="mt-12 flex flex-col gap-3 pb-6">
           <h2 className="text-2xl font-medium">My Listings</h2>
           <div className="w-full flex-row flex flex-wrap gap-3">
             {loading ? (

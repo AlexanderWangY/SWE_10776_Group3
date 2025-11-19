@@ -61,9 +61,13 @@ export default function AppNavbar({ user }: Props) {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="md:hidden"
         />
-        <NavbarBrand className="flex items-left text-xl text-blue-600 font-bold">
-          GatorMarket
-        </NavbarBrand>
+        <NavbarBrand className="flex items-left">
+        <Link href="/" className="cursor-pointer">
+          <span className="text-xl font-bold text-blue-600">
+            GatorMarket
+          </span>
+        </Link>
+      </NavbarBrand>
       </NavbarContent>
 
       <NavbarContent
