@@ -24,6 +24,8 @@ class UserListingResponse(BaseModel):
 
     @field_serializer('status', 'category', 'condition', mode='plain')
     def remove_underscores(self, value) -> str:
+        if value is None:
+            return None
         return value.value.replace("_", " ").lower()
     
 class ListingResponse(BaseModel):
@@ -42,4 +44,4 @@ class ListingResponse(BaseModel):
     def remove_underscores(self, value) -> str:
         if value is None:
             return None
-        return value.value.replace("_", " ")
+        return value.value.replace("_", " ").lower()
