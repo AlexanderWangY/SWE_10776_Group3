@@ -38,7 +38,7 @@ async def get_listings(
     order: Optional[str] = Query(SortEnum.DESC.value, description="Sort order: asc or desc"),
 
     # Filters
-    category_id: Optional[str] = Query(None, description="Category value (matching ListingCategory enum)"),
+    category: Optional[str] = Query(None, description="Category value (matching ListingCategory enum)"),
     condition: Optional[str] = Query(None, description="Condition value (matching ListingCondition enum)"),
     min_price: Optional[int] = Query(None, ge=0),
     max_price: Optional[int] = Query(None, ge=0),
@@ -63,11 +63,11 @@ async def get_listings(
     async with async_session as session:
         statement = select(Listing).options(selectinload(Listing.seller))
 
-        if category_id:
+        if category:
             try:
-                category_enum = ListingCategory[category_id.upper()]
+                category_enum = ListingCategory[category.upper()]
             except KeyError:
-                raise HTTPException(status_code=400, detail=f"Invalid category value '{category_id}'.")
+                raise HTTPException(status_code=400, detail=f"Invalid category value '{category}'.")
             statement = statement.where(Listing.category == category_enum)
 
         if condition:
