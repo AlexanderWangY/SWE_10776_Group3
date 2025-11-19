@@ -19,6 +19,7 @@ export default function Root() {
         setListings(res.data || []);
       } catch (error) {
         console.error("Failed to fetch listings:", error);
+        setListings([]);
       } finally {
         setLoading(false);
       }
@@ -28,67 +29,102 @@ export default function Root() {
 
   useEffect(() => {
     if (listings.length === 0) return;
+
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % listings.length);
     }, 2000);
+
     return () => clearInterval(interval);
   }, [listings]);
 
+
+  const Hero = (
+    <div className="flex-1 flex flex-col gap-4 text-center md:text-left">
+      <h1 className="text-4xl sm:text-5xl font-semibold">
+        The Marketplace for Gators
+      </h1>
+      <h2 className="text-base sm:text-lg text-neutral-700 md:w-4/5">
+        Buy and sell with verified UF students on UF&apos;s secondhand
+        marketplace. Built for gators by gators.
+      </h2>
+
+      <div className="flex flex-row gap-2 mt-6 justify-center md:justify-start flex-wrap">
+        <Link to="/listings">
+          <Button variant="solid" size="lg" color="primary" radius="sm">
+            Browse
+          </Button>
+        </Link>
+        <Link to="/listings/new">
+          <Button variant="ghost" size="lg" color="primary" radius="sm">
+            Make a Listing
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+
+  const SkeletonCard = (
+    <div className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[500px] animate-pulse">
+      <div className="w-full aspect-square bg-gray-200 mb-1" />
+      <div className="w-full h-5 bg-gray-200 mb-1" />
+      <div className="w-3/4 h-4 bg-gray-200" />
+    </div>
+  );
+
+  const Placeholder = (
+    <div className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[500px]">
+      {/* WE COULD PUT A RANDOM IMAGE HERE TO MAKE IT MORE APPEALING IDK */}
+      <img src="/placeholder.jpg" alt="No listings available" className="w-full aspect-square mb-1 rounded-xl" />
+    </div>
+  );
+
+  // LOADING THE LISTINGS
+  if (loading) {
+    return (
+      <main className="max-w-6xl mx-auto min-h-screen flex flex-col items-center px-4">
+        <section className="w-full pt-24 flex flex-col md:flex-row gap-8 items-start">
+          {Hero}
+          <div className="flex-1 flex justify-center items-center w-full">
+            {SkeletonCard}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  // WHEN THERE ARE NO LISTINGS
+  if (!loading && listings.length === 0) {
+    return (
+      <main className="max-w-6xl mx-auto min-h-screen flex flex-col items-center px-4">
+        <section className="w-full pt-24 flex flex-col md:flex-row gap-8 items-start">
+          {Hero}
+          <div className="flex-1 flex justify-center items-center w-full">
+            {Placeholder}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  // CAROSEL OF LISTINGS
   const currentListing = listings[currentIndex];
 
   return (
     <main className="max-w-6xl mx-auto min-h-screen flex flex-col items-center px-4">
       <section className="w-full pt-24 flex flex-col md:flex-row gap-8 items-start">
-        {/* HERO TITLE + BUTTONS */}
-        <div className="flex-1 flex flex-col gap-4 text-center md:text-left">
-          <h1 className="text-4xl sm:text-5xl font-semibold">
-            The Marketplace for Gators
-          </h1>
-          <h2 className="text-base sm:text-lg text-neutral-700 md:w-4/5">
-            Buy and sell with verified UF students on UF&apos;s secondhand
-            marketplace. Built for gators by gators.
-          </h2>
+        {Hero}
 
-          <div className="flex flex-row gap-2 mt-6 justify-center md:justify-start flex-wrap">
-            <Link to="/listings">
-              <Button variant="solid" size="lg" color="primary" radius="sm">
-                Browse
-              </Button>
-            </Link>
-            <Link to="/listings/new">
-              <Button variant="ghost" size="lg" color="primary" radius="sm">
-                Make a Listing
-              </Button>
-            </Link>
-          </div>
+        <div className="flex-1 flex justify-center md:justify-end items-center w-full">
+          <ListingCard
+            key={currentListing.id}
+            id={currentListing.id}
+            title={currentListing.title}
+            price_cents={currentListing.price_cents}
+            image_url={currentListing.image_url}
+            className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[500px]"
+          />
         </div>
-
-      {/* CAROSUEL*/}
-      <div className="flex-1 flex justify-center md:justify-end items-center w-full">
-        {loading ? (
-          <div className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[500px] animate-pulse">
-            {/* IMAGE SKELETON*/}
-            <div className="w-full aspect-square rounded-none bg-gray-200 mb-1" />
-            
-            {/* TITLE SKELETON*/}
-            <div className="w-full h-5 rounded-sm bg-gray-200 mb-1" />
-            
-            {/* PRICE SKELETON */}
-            <div className="w-3/4 h-4 rounded-sm bg-gray-200" />
-          </div>
-        ) : (
-          <></>
-          // <ListingCard
-          //   key={currentListing.id}
-          //   id={currentListing.id}
-          //   title={currentListing.title}
-          //   price_cents={currentListing.price_cents}
-          //   image_url={currentListing.image_url}
-          //   className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[500px]"
-          // />
-        )}
-      </div>
-    </section>
+      </section>
     </main>
   );
 }

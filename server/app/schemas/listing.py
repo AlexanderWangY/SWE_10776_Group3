@@ -24,7 +24,7 @@ class UserListingResponse(BaseModel):
 
     @field_serializer('status', 'category', 'condition', mode='plain')
     def remove_underscores(self, value) -> str:
-        return value.value.replace("_", " ")
+        return value.value.replace("_", " ").lower()
     
 class ListingResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

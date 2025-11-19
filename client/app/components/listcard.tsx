@@ -2,6 +2,8 @@
 import React, { useState } from "react";
 
 export type ListingStatus = "draft" | "active" | "sold" | "inactive" | "archived";
+export type ListingCategory = "electronics" | "school supplies" | "furniture" | "appliances" | "clothing" | "textbooks" | "miscellaneous";
+export type ListingCondition = "new" | "like new" | "very good" | "good" | "used";
 
 export interface Seller {
   first_name: string;
@@ -19,6 +21,8 @@ export interface Listing {
   updated_at: string;
   image_url?: string; // IMAGE IS OPTIONAL IN BACKEND
   seller: Seller;
+  category?: ListingCategory | null;
+  condition?: ListingCondition | null;
 }
 
 type ListingCardProps = {
