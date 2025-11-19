@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from app.db.database import get_async_session
 from typing import Annotated, Optional
-from app.models.listing import Listing
+from app.models.listing import Listing, ListingCategory, ListingCondition
 from app.schemas.listing import ListingResponse, UserListingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, asc, desc
@@ -35,7 +35,14 @@ async def get_listings(
     pagination: Annotated[Pagination, Depends(pagination_params)],
     async_session: AsyncSession = Depends(get_async_session),
     sort_by: Optional[str] = Query("updated_at", description="Sort field: price, created_at, updated_at"),
-    order: Optional[str] = Query(SortEnum.DESC.value, description="Sort order: asc or desc")
+    order: Optional[str] = Query(SortEnum.DESC.value, description="Sort order: asc or desc"),
+
+    # Filters
+    category: Optional[str] = Query(None, description="Category value (matching ListingCategory enum)"),
+    condition: Optional[str] = Query(None, description="Condition value (matching ListingCondition enum)"),
+    min_price: Optional[int] = Query(None, ge=0),
+    max_price: Optional[int] = Query(None, ge=0),
+
 ):
     sort_fields = {
         "id": Listing.title,
@@ -52,11 +59,32 @@ async def get_listings(
 
     if sort_order not in SortEnum:
         raise HTTPException(status_code=400, detail="Invalid order value. Must be 'asc' or 'desc'.")
+    
     async with async_session as session:
+        statement = select(Listing).options(selectinload(Listing.seller))
+
+        if category:
+            try:
+                category_enum = ListingCategory[category.upper()]
+            except KeyError:
+                raise HTTPException(status_code=400, detail=f"Invalid category value '{category}'.")
+            statement = statement.where(Listing.category == category_enum)
+
+        if condition:
+            try:
+                condition_enum = ListingCondition[condition.upper()]
+            except KeyError:
+                raise HTTPException(status_code=400, detail=f"Invalid condition value '{condition}'.")
+            statement = statement.where(Listing.condition == condition_enum)
+
+        if min_price is not None:
+            statement = statement.where(Listing.price_cents >= min_price)
+
+        if max_price is not None:
+            statement = statement.where(Listing.price_cents <= max_price)
+
         statement = (
-            select(Listing)
-            .options(selectinload(Listing.seller))
-            .limit(pagination.card_num)
+            statement.limit(pagination.card_num)
             .offset(
                 pagination.page_num - 1
                 if pagination.page_num == 1
@@ -64,6 +92,7 @@ async def get_listings(
             )
             .order_by(asc(sort_column) if sort_order == SortEnum.ASC.value else desc(sort_column))
         )
+
         result = await session.scalars(statement)
         listings = result.all()
         return listings

@@ -41,7 +41,7 @@ export default function About() {
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
-      <main className="flex flex-col items-center w-full mt-10 px-5 flex-grow">
+      <main className="flex flex-col items-center w-full mt-10 px-5 flex-grow mb-10">
         <Card
           className={`max-w-4xl w-full shadow-2xl shadow-blue-950/50 bg-gradient-to-tr from-zinc-50/80 to-zinc-200/80 
                      rounded-2xl p-8 backdrop-blur-md ${isVisible ? "animate-fadeup" : ""}`}

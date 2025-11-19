@@ -6,11 +6,29 @@ from datetime import datetime, timezone
 import enum
 
 class ListingStatus(enum.Enum):
-    DRAFT = "draft"
-    ACTIVE = "active"
-    SOLD = "sold"
-    INACTIVE = "inactive"
-    ARCHIVED = "archived"
+    DRAFT = "DRAFT"
+    ACTIVE = "ACTIVE"
+    SOLD = "SOLD"
+    INACTIVE = "INACTIVE"
+    ARCHIVED = "ARCHIVED"
+
+# copilot autocomplete was used to help generate this enum
+class ListingCategory(enum.Enum):
+    ELECTRONICS = "ELECTRONICS"
+    SCHOOL_SUPPLIES = "SCHOOL_SUPPLIES"
+    FURNITURE = "FURNITURE"
+    APPLIANCES = "APPLIANCES"
+    CLOTHING = "CLOTHING"
+    TEXTBOOKS = "TEXTBOOKS"
+    MISCELLANEOUS = "MISCELLANEOUS"
+
+# copilot autocomplete was used to help generate this enum
+class ListingCondition(enum.Enum):
+    NEW = "NEW"
+    LIKE_NEW = "LIKE_NEW"
+    VERY_GOOD = "VERY_GOOD"
+    GOOD = "GOOD"
+    USED = "USED"
 
 class Listing(Base):
     __tablename__ = "listing_table"
@@ -22,4 +40,6 @@ class Listing(Base):
     price_cents: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[ListingStatus] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    category: Mapped[ListingCategory] = mapped_column(nullable=True)
+    condition: Mapped[ListingCondition] = mapped_column(nullable=True)
