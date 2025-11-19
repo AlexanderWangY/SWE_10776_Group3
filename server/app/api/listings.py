@@ -4,13 +4,21 @@ from typing import Annotated, Optional
 from app.models.listing import Listing, ListingCategory, ListingCondition
 from app.schemas.listing import ListingResponse, UserListingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, asc, desc
+from sqlalchemy import select, asc, desc, func
 from sqlalchemy.orm import selectinload
 from app.models.user import User
 from app.auth.backend import fastapi_users
 from app.schemas.pagination import Pagination, SortEnum, pagination_params
 
 router = APIRouter()
+
+@router.get("/listings/total", tags=["listings"])
+async def get_total_listings(
+    async_session: AsyncSession = Depends(get_async_session)
+):
+    async with async_session as session:
+        total = await session.scalar(select(func.count(Listing.id)))
+        return {"total": total}
 
 @router.get("/listings/{listing_id}", tags=["listings"], response_model=UserListingResponse)
 async def get_listing_by_id(
