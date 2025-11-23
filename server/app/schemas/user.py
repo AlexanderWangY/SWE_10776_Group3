@@ -53,4 +53,5 @@ class UserResponse(BaseModel):
         if self.profile_picture is None:
             return None
 
-        return f"{settings.base_url}/static/{self.profile_picture}" # Source: https://github.com/fastapi/fastapi/discussions/9430
+        return f"{settings.base_url}/static/{self.profile_picture}" # Source: https://github.com/fastapi/fastapi/discussions/9430/
+    

@@ -17,7 +17,8 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     first_name: Mapped[str] = mapped_column(String, nullable=True)
     last_name: Mapped[str] = mapped_column(String, nullable=True)
     phone_number: Mapped[str] = mapped_column(String, nullable=True)
-    profile_picture: Mapped[str] = mapped_column(String, default="images/default_pfp.jpg", nullable=True)
+    # server_default was added to provide a default value at the database level so that SQL inserts use the default value, suggested by Copilot
+    profile_picture: Mapped[str] = mapped_column(String, default="images/profile/GatorAvatarTemporary.png", server_default="images/profile/GatorAvatarTemporary.png", nullable=True)
     listings: Mapped[List["Listing"]] = relationship(back_populates="seller", cascade="all, delete-orphan")
 
 async def get_user_db(
