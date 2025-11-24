@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from app.db.database import get_async_session
 from typing import Annotated, Optional
-from app.models.listing import Listing, ListingCategory, ListingCondition
+from app.models.listing import Listing, ListingCategory, ListingCondition, ListingStatus
 from app.schemas.listing import ListingResponse, UserListingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, asc, desc, func
@@ -46,6 +46,7 @@ async def get_listings(
     order: Optional[str] = Query(SortEnum.DESC.value, description="Sort order: asc or desc"),
 
     # Filters
+    status: Optional[str] = Query(None, description="Status value (matching ListingStatus enum)"),
     category: Optional[str] = Query(None, description="Category value (matching ListingCategory enum)"),
     condition: Optional[str] = Query(None, description="Condition value (matching ListingCondition enum)"),
     min_price: Optional[int] = Query(None, ge=0),
@@ -70,6 +71,13 @@ async def get_listings(
     
     async with async_session as session:
         statement = select(Listing).options(selectinload(Listing.seller))
+
+        if status:
+            try:
+                status_enum = ListingStatus[status.upper()]
+            except KeyError:
+                raise HTTPException(status_code=400, detail=f"Invalid status value '{status}'.")
+            statement = statement.where(Listing.status == status_enum)
 
         if category:
             try:
