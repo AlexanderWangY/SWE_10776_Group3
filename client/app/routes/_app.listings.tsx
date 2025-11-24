@@ -70,11 +70,21 @@ export default function ListingsPage({}: Route.ComponentProps) {
 
   const cardsPerPage = 40; // WE CAN CHANGE THIS IF U WANT
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [maxDiscoveredPage, setMaxDiscoveredPage] = useState<number>(1);
+  const [foundLastPage, setFoundLastPage] = useState<boolean>(false);
 
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set([]));
-  const [selectedConditions, setSelectedConditions] = useState<Set<string>>(new Set([]));
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCondition, setSelectedCondition] = useState<string>("");
   const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
   const [debouncedPriceRange, setDebouncedPriceRange] = useState<number[]>([0, 1000]);
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(prev => prev === category ? "" : category);
+  };
+
+  const handleConditionChange = (condition: string) => {
+    setSelectedCondition(prev => prev === condition ? "" : condition);
+  };
 
   const fetchListings = async (
     sortQuery?: string,
@@ -86,59 +96,93 @@ export default function ListingsPage({}: Route.ComponentProps) {
     try {
       const apiURL = import.meta.env.VITE_API_URL;
 
-      let url = `${apiURL}/listings?page_num=${pageNum}&card_num=${cardsPerPage}`;
+      let filterParams = "";
 
       if (sortQuery) {
         const [sort_by, orderPart] = sortQuery.split("&");
         const order = orderPart?.split("=")[1];
-        url += `&sort_by=${sort_by}&order=${order}`;
+        filterParams += `&sort_by=${sort_by}&order=${order}`;
       }
 
       if (searchTerm.trim()) {
-        url += `&keyword=${encodeURIComponent(searchTerm.trim())}`;
+        filterParams += `&keyword=${encodeURIComponent(searchTerm.trim())}`;
       }
 
-      if (selectedCategories.size > 0) {
-        selectedCategories.forEach(cat => {
-          url += `&category=${cat}`;
-        });
+      if (selectedCategory) {
+        filterParams += `&category=${selectedCategory}`;
       }
 
-      if (selectedConditions.size > 0) {
-        selectedConditions.forEach(cond => {
-          url += `&condition=${cond}`;
-        });
+      if (selectedCondition) {
+        filterParams += `&condition=${selectedCondition}`;
       }
 
       const [minPrice, maxPrice] = debouncedPriceRange;
       if (minPrice > 0) {
-        url += `&min_price=${minPrice * 100}`;
+        filterParams += `&min_price=${minPrice * 100}`;
       }
       if (maxPrice < 1000) {
-        url += `&max_price=${maxPrice * 100}`;
+        filterParams += `&max_price=${maxPrice * 100}`;
       }
 
-      const res = await fetch(url);
+      const currentPageUrl = `${apiURL}/listings?page_num=${pageNum}&card_num=${cardsPerPage}${filterParams}`;
+      const nextPageUrl = `${apiURL}/listings?page_num=${pageNum + 1}&card_num=1${filterParams}`;
 
-      if (!res.ok) {
-        const msg = await res.json();
-        throw new Error(msg.detail || `Error ${res.status}`);
+      const [currentRes, nextRes] = await Promise.all([
+        fetch(currentPageUrl),
+        fetch(nextPageUrl)
+      ]);
+
+      if (!currentRes.ok) {
+        const msg = await currentRes.json();
+        throw new Error(msg.detail || `Error ${currentRes.status}`);
       }
 
-      const data = await res.json();
+      const [currentData, nextData] = await Promise.all([
+        currentRes.json(),
+        nextRes.ok ? nextRes.json() : []
+      ]);
 
-      if (Array.isArray(data)) {
-        const parsed = listingsResponseSchema.parse(data);
+      if (Array.isArray(currentData)) {
+        const parsed = listingsResponseSchema.parse(currentData);
         setListings(parsed);
 
-        if (parsed.length === cardsPerPage) {
-          setTotalPages(pageNum + 1); 
-        } else {
+        const hasNextPage = Array.isArray(nextData) && nextData.length > 0;
+
+        console.log('Pagination Debug:', {
+          pageNum,
+          hasNextPage,
+          foundLastPage,
+          maxDiscoveredPage,
+          currentDataLength: parsed.length,
+          nextDataLength: Array.isArray(nextData) ? nextData.length : 0
+        });
+
+        if (parsed.length === 0) {
+          const lastPage = Math.max(1, pageNum - 1);
+          setTotalPages(lastPage);
+          setMaxDiscoveredPage(lastPage);
+          setFoundLastPage(true);
+          if (pageNum > 1) {
+            setPage(lastPage);
+          }
+        } else if (!hasNextPage) {
           setTotalPages(pageNum);
+          setMaxDiscoveredPage(pageNum);
+          setFoundLastPage(true);
+        } else if (foundLastPage) {
+          setTotalPages(maxDiscoveredPage);
+        } else {
+          const newTotal = pageNum + 1;
+          setTotalPages(newTotal);
+          if (pageNum >= maxDiscoveredPage) {
+            setMaxDiscoveredPage(newTotal);
+          }
         }
       } else {
         setListings([]);
         setTotalPages(1);
+        setMaxDiscoveredPage(1);
+        setFoundLastPage(true);
       }
     } catch (err: any) {
       console.error("Failed to fetch listings:", err);
@@ -158,11 +202,13 @@ export default function ListingsPage({}: Route.ComponentProps) {
 
   useEffect(() => {
     setPage(1);
-  }, [sortOption, selectedCategories, selectedConditions, debouncedPriceRange, searchTerm]);
+    setMaxDiscoveredPage(1);
+    setFoundLastPage(false);
+  }, [sortOption, selectedCategory, selectedCondition, debouncedPriceRange, searchTerm]);
 
   useEffect(() => {
     fetchListings(sortOption, page);
-  }, [sortOption, page, selectedCategories, selectedConditions, debouncedPriceRange, searchTerm]);
+  }, [sortOption, page, selectedCategory, selectedCondition, debouncedPriceRange, searchTerm]);
 
   return (
     <main className="max-w-7xl mx-auto pt-[1rem] xl:px-0 px-4 pb-10">
@@ -199,54 +245,128 @@ export default function ListingsPage({}: Route.ComponentProps) {
 
         {/* RIGHT FILTER PANEL */}
         <aside className="hidden sm:block fixed top-20 right-4 w-[220px] h-[calc(100vh-5rem)] overflow-y-auto z-50">
-          <Card className="p-3 shadow-sm border border-gray-200">
-            <CardHeader className="text-sm font-semibold pb-1 border-b border-neutral-200">
+          <Card className="p-2 shadow-sm border border-gray-200">
+            <CardHeader className="text-xs font-semibold pb-1 border-b border-neutral-200">
               Filters
             </CardHeader>
 
-            <CardBody className="pt-3 space-y-2 text-sm text-default-600">
+            <CardBody className="pt-2 space-y-1 text-xs text-default-600">
               {/* CATEGORY FILTER */}
-                <div className="mb-6">
-                <h3 className="text-sm font-semibold mb-2 text-default-700">
+                <div className="mb-3">
+                <h3 className="text-xs font-semibold mb-1.5 text-default-700">
                   Category
                 </h3>
 
-                <CheckboxGroup
-                  value={[...selectedCategories]}
-                  onChange={(vals) => {
-                    setSelectedCategories(new Set(vals));
-                  }}
-                  className="flex flex-col gap-2"
-                >
-                  <Checkbox value="ELECTRONICS" color="warning">Electronics</Checkbox>
-                  <Checkbox value="FURNITURE" color="warning">Furniture</Checkbox>
-                  <Checkbox value="CLOTHING" color="warning">Clothing</Checkbox>
-                  <Checkbox value="SCHOOL_SUPPLIES" color="warning">School Supplies</Checkbox>
-                  <Checkbox value="APPLIANCES" color="warning">Appliances</Checkbox>
-                  <Checkbox value="TEXTBOOKS" color="warning">Textbooks</Checkbox>
-                  <Checkbox value="MISCELLANEOUS" color="warning">Miscellaneous</Checkbox>
-                </CheckboxGroup>
+                <div className="flex flex-col gap-1.5">
+                  <Checkbox 
+                    isSelected={selectedCategory === ""}
+                    onValueChange={() => setSelectedCategory("")}
+                    color="warning"
+                  >
+                    All Categories
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCategory === "ELECTRONICS"}
+                    onValueChange={() => handleCategoryChange("ELECTRONICS")}
+                    color="warning"
+                  >
+                    Electronics
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCategory === "FURNITURE"}
+                    onValueChange={() => handleCategoryChange("FURNITURE")}
+                    color="warning"
+                  >
+                    Furniture
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCategory === "CLOTHING"}
+                    onValueChange={() => handleCategoryChange("CLOTHING")}
+                    color="warning"
+                  >
+                    Clothing
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCategory === "SCHOOL_SUPPLIES"}
+                    onValueChange={() => handleCategoryChange("SCHOOL_SUPPLIES")}
+                    color="warning"
+                  >
+                    School Supplies
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCategory === "APPLIANCES"}
+                    onValueChange={() => handleCategoryChange("APPLIANCES")}
+                    color="warning"
+                  >
+                    Appliances
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCategory === "TEXTBOOKS"}
+                    onValueChange={() => handleCategoryChange("TEXTBOOKS")}
+                    color="warning"
+                  >
+                    Textbooks
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCategory === "MISCELLANEOUS"}
+                    onValueChange={() => handleCategoryChange("MISCELLANEOUS")}
+                    color="warning"
+                  >
+                    Miscellaneous
+                  </Checkbox>
+                </div>
               </div>
 
-              {/* CONDITION DROPDOWN */}
-                <div className="mb-6">
-                <h3 className="text-sm font-semibold mb-2 text-default-700">
+              {/* CONDITION FILTER */}
+                <div className="mb-3">
+                <h3 className="text-xs font-semibold mb-1.5 text-default-700">
                   Condition
                 </h3>
 
-                <CheckboxGroup
-                  value={[...selectedConditions]}
-                  onChange={(vals) => {
-                    setSelectedConditions(new Set(vals));
-                  }}
-                  className="flex flex-col gap-2"
-                >
-                  <Checkbox value="NEW" color="primary">New</Checkbox>
-                  <Checkbox value="LIKE_NEW" color="primary">Like New</Checkbox>
-                  <Checkbox value="VERY_GOOD" color="primary">Very Good</Checkbox>
-                  <Checkbox value="GOOD" color="primary">Good</Checkbox>
-                  <Checkbox value="USED" color="primary">Used</Checkbox>
-                </CheckboxGroup>
+                <div className="flex flex-col gap-1.5">
+                  <Checkbox 
+                    isSelected={selectedCondition === ""}
+                    onValueChange={() => setSelectedCondition("")}
+                    color="primary"
+                  >
+                    All Conditions
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCondition === "NEW"}
+                    onValueChange={() => handleConditionChange("NEW")}
+                    color="primary"
+                  >
+                    New
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCondition === "LIKE_NEW"}
+                    onValueChange={() => handleConditionChange("LIKE_NEW")}
+                    color="primary"
+                  >
+                    Like New
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCondition === "VERY_GOOD"}
+                    onValueChange={() => handleConditionChange("VERY_GOOD")}
+                    color="primary"
+                  >
+                    Very Good
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCondition === "GOOD"}
+                    onValueChange={() => handleConditionChange("GOOD")}
+                    color="primary"
+                  >
+                    Good
+                  </Checkbox>
+                  <Checkbox 
+                    isSelected={selectedCondition === "USED"}
+                    onValueChange={() => handleConditionChange("USED")}
+                    color="primary"
+                  >
+                    Used
+                  </Checkbox>
+                </div>
               </div>
 
               {/* PRICE RANGE SLIDER */}
@@ -326,7 +446,12 @@ export default function ListingsPage({}: Route.ComponentProps) {
           size="lg"
           variant="light"
           showControls={true}
-          onChange={(newPage) => setPage(newPage)}
+          isDisabled={loading}
+          onChange={(newPage) => {
+            if (newPage >= 1 && newPage <= totalPages && !loading) {
+              setPage(newPage);
+            }
+          }}
         />
       </footer>
     </main>
