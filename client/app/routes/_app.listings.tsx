@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import {
   Card,
@@ -9,11 +10,28 @@ import {
   SelectItem,
   Input,
   Pagination,
+  Slider,
+  cn,
+  Listbox,
+  ListboxItem,
 } from "@heroui/react";
 import { z } from "zod";
-import { type Listing } from "~/components/listcard";
+import React from "react";
+
 import ListingCard from "~/components/ListingCard";
+import type { Listing } from "~/components/listcard";
 import type { Route } from "./+types/_app.about";
+import { Checkbox, CheckboxGroup } from "@heroui/react";
+
+export const ListboxWrapper = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
+  <div className="w-[260px] border-small px-1 py-2 rounded-small border-default-200 dark:border-default-100">
+    {children}
+  </div>
+);
 
 const sellerSchema = z.object({
   first_name: z.string(),
@@ -38,8 +56,6 @@ export const listingSchema = z.object({
   updated_at: z.string(),
   image_url: z.string().optional(),
   seller: sellerSchema,
-  category: z.enum(["electronics", "school supplies", "furniture", "appliances", "clothing", "textbooks", "miscellaneous"]).nullable().optional(),
-  condition: z.enum(["new", "like new", "very good", "good", "used"]).nullable().optional(),
 });
 
 const listingsResponseSchema = z.array(listingSchema);
@@ -50,16 +66,27 @@ export default function ListingsPage({}: Route.ComponentProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
-
   const [page, setPage] = useState<number>(1);
+
   const cardsPerPage = 40; // WE CAN CHANGE THIS IF U WANT
   const [totalPages, setTotalPages] = useState<number>(1);
 
-  const fetchListings = async (sortQuery?: string, pageNum: number = page) => {
+  // Filter states
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set([]));
+  const [selectedConditions, setSelectedConditions] = useState<Set<string>>(new Set([]));
+  const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
+  const [debouncedPriceRange, setDebouncedPriceRange] = useState<number[]>([0, 1000]);
+
+  const fetchListings = async (
+    sortQuery?: string,
+    pageNum: number = page
+  ) => {
     setLoading(true);
     setError(null);
+
     try {
       const apiURL = import.meta.env.VITE_API_URL;
+
       let url = `${apiURL}/listings?page_num=${pageNum}&card_num=${cardsPerPage}`;
 
       if (sortQuery) {
@@ -68,7 +95,37 @@ export default function ListingsPage({}: Route.ComponentProps) {
         url += `&sort_by=${sort_by}&order=${order}`;
       }
 
+      // Add search term
+      if (searchTerm.trim()) {
+        url += `&search=${encodeURIComponent(searchTerm.trim())}`;
+      }
+
+      // Add category filters
+      if (selectedCategories.size > 0) {
+        selectedCategories.forEach(cat => {
+          url += `&category=${cat}`;
+        });
+      }
+
+      // Add condition filters
+      if (selectedConditions.size > 0) {
+        selectedConditions.forEach(cond => {
+          url += `&condition=${cond}`;
+        });
+      }
+
+      // Add price range filters (convert dollars to cents)
+      const [minPrice, maxPrice] = debouncedPriceRange;
+      if (minPrice > 0) {
+        url += `&min_price=${minPrice * 100}`;
+      }
+      if (maxPrice < 1000) {
+        url += `&max_price=${maxPrice * 100}`;
+      }
+
+      // Fetch listings
       const res = await fetch(url);
+
       if (!res.ok) {
         const msg = await res.json();
         throw new Error(msg.detail || `Error ${res.status}`);
@@ -77,11 +134,16 @@ export default function ListingsPage({}: Route.ComponentProps) {
       const data = await res.json();
 
       if (Array.isArray(data)) {
-        const parsedListings = listingsResponseSchema.parse(data);
-        setListings(parsedListings);
+        const parsed = listingsResponseSchema.parse(data);
+        setListings(parsed);
 
-        // PLACEHOLDER
-        setTotalPages(5);
+        // Calculate pages based on current result count
+        // If we got a full page, there might be more
+        if (parsed.length === cardsPerPage) {
+          setTotalPages(pageNum + 1); // Show at least one more page
+        } else {
+          setTotalPages(pageNum); // This is the last page
+        }
       } else {
         setListings([]);
         setTotalPages(1);
@@ -94,13 +156,23 @@ export default function ListingsPage({}: Route.ComponentProps) {
     }
   };
 
+  // Debounce price range changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedPriceRange(priceRange);
+    }, 800); // Wait 800ms after user stops moving slider
+
+    return () => clearTimeout(timer);
+  }, [priceRange]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [sortOption, selectedCategories, selectedConditions, debouncedPriceRange, searchTerm]);
+
   useEffect(() => {
     fetchListings(sortOption, page);
-  }, [sortOption, page]);
-
-  const filteredListings = listings.filter((listing) =>
-    listing.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  }, [sortOption, page, selectedCategories, selectedConditions, debouncedPriceRange, searchTerm]);
 
   return (
     <main className="max-w-7xl mx-auto pt-[1rem] xl:px-0 px-4 pb-10">
@@ -126,22 +198,102 @@ export default function ListingsPage({}: Route.ComponentProps) {
             onSelectionChange={(keys) => {
               const selected = Array.from(keys)[0] as string;
               setSortOption(selected || "");
-              setPage(1); // RESETS ON SORT CHANGE
             }}
             items={sortOptions}
           >
-            {(item) => <SelectItem key={item.query}>{item.label}</SelectItem>}
+            {(item) => (
+              <SelectItem key={item.query}>{item.label}</SelectItem>
+            )}
           </Select>
         </div>
 
-        {/* RIGHT FILTER ITS SUPPOSED TO BE FIXED BUT IT MOVES ON SCROLL HELP MEEEEEE*/}
+        {/* RIGHT FILTER PANEL */}
         <aside className="hidden sm:block fixed top-20 right-4 w-[220px] h-[calc(100vh-5rem)] overflow-y-auto z-50">
           <Card className="p-3 shadow-sm border border-gray-200">
             <CardHeader className="text-sm font-semibold pb-1 border-b border-neutral-200">
-              Filters (Coming Soon)
+              Filters
             </CardHeader>
+
             <CardBody className="pt-3 space-y-2 text-sm text-default-600">
-              <p>hewwo hewwo hewwo hewwo hewwo hewwo hewwo hewwo hewwo hewwo</p>
+              {/* CATEGORY FILTER */}
+                <div className="mb-6">
+                <h3 className="text-sm font-semibold mb-2 text-default-700">
+                  Category
+                </h3>
+
+                <CheckboxGroup
+                  value={[...selectedCategories]}
+                  onChange={(vals) => {
+                    setSelectedCategories(new Set(vals));
+                  }}
+                  className="flex flex-col gap-2"
+                >
+                  <Checkbox value="ELECTRONICS" color="warning">Electronics</Checkbox>
+                  <Checkbox value="FURNITURE" color="warning">Furniture</Checkbox>
+                  <Checkbox value="CLOTHING" color="warning">Clothing</Checkbox>
+                  <Checkbox value="SCHOOL_SUPPLIES" color="warning">School Supplies</Checkbox>
+                  <Checkbox value="APPLIANCES" color="warning">Appliances</Checkbox>
+                  <Checkbox value="TEXTBOOKS" color="warning">Textbooks</Checkbox>
+                  <Checkbox value="MISCELLANEOUS" color="warning">Miscellaneous</Checkbox>
+                </CheckboxGroup>
+              </div>
+
+              {/* CONDITION DROPDOWN */}
+                <div className="mb-6">
+                <h3 className="text-sm font-semibold mb-2 text-default-700">
+                  Condition
+                </h3>
+
+                <CheckboxGroup
+                  value={[...selectedConditions]}
+                  onChange={(vals) => {
+                    setSelectedConditions(new Set(vals));
+                  }}
+                  className="flex flex-col gap-2"
+                >
+                  <Checkbox value="NEW" color="primary">New</Checkbox>
+                  <Checkbox value="LIKE_NEW" color="primary">Like New</Checkbox>
+                  <Checkbox value="VERY_GOOD" color="primary">Very Good</Checkbox>
+                  <Checkbox value="GOOD" color="primary">Good</Checkbox>
+                  <Checkbox value="USED" color="primary">Used</Checkbox>
+                </CheckboxGroup>
+              </div>
+
+              {/* PRICE RANGE SLIDER */}
+              <Slider
+                classNames={{
+                  base: "max-w-md gap-3",
+                  filler:
+                    "bg-linear-to-r from-orange-300 to-blue-300 dark:from-orange-600 dark:to-blue-800",
+                }}
+                value={priceRange}
+                onChange={(value) => {
+                  setPriceRange(value as number[]);
+                }}
+                formatOptions={{
+                  style: "currency",
+                  currency: "USD",
+                }}
+                label="Price Range"
+                maxValue={1000}
+                size="md"
+                step={1}
+                renderThumb={({ index, ...props }) => (
+                  <div
+                    {...props}
+                    className="group p-1 top-1/2 bg-background border-small border-default-200 dark:border-default-400/50 shadow-medium rounded-full cursor-grab data-[dragging=true]:cursor-grabbing"
+                  >
+                    <span
+                      className={cn(
+                        "transition-transform bg-linear-to-br shadow-small rounded-full w-5 h-5 block group-data-[dragging=true]:scale-80",
+                        index === 0
+                          ? "from-orange-200 to-orange-500 dark:from-orange-400 dark:to-orange-600"
+                          : "from-blue-200 to-blue-600 dark:from-blue-400 dark:to-blue-700"
+                      )}
+                    />
+                  </div>
+                )}
+              />
             </CardBody>
           </Card>
         </aside>
@@ -149,7 +301,9 @@ export default function ListingsPage({}: Route.ComponentProps) {
 
       {/* ERROR */}
       {error && (
-        <div className="mt-6 text-red-600 bg-red-100 p-3 rounded-md">{error}</div>
+        <div className="mt-6 text-red-600 bg-red-100 p-3 rounded-md">
+          {error}
+        </div>
       )}
 
       {/* LOADING */}
@@ -162,13 +316,19 @@ export default function ListingsPage({}: Route.ComponentProps) {
       {/* LISTINGS GRID */}
       {!loading && !error && (
         <div className="mt-8 grid gap-6 grid-cols-[repeat(auto-fill,minmax(200px,max-content))]">
-          {filteredListings.map((listing) => (
-            <ListingCard key={listing.id} {...listing} />
+          {listings.map((listing) => (
+            <ListingCard
+              key={listing.id}
+              id={listing.id}
+              title={listing.title}
+              price_cents={listing.price_cents}
+              image_url={listing.image_url || ""}
+            />
           ))}
         </div>
       )}
 
-      {/* PAGINATION UI */}
+      {/* PAGINATION */}
       <footer className="mt-8 flex justify-start">
         <Pagination
           page={page}
