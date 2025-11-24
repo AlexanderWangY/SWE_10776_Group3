@@ -51,6 +51,7 @@ async def get_listings(
     condition: Optional[str] = Query(None, description="Condition value (matching ListingCondition enum)"),
     min_price: Optional[int] = Query(None, ge=0),
     max_price: Optional[int] = Query(None, ge=0),
+    keyword: Optional[str] = Query(None, description="Keyword to search in title or description")
 
 ):
     sort_fields = {
@@ -98,6 +99,12 @@ async def get_listings(
 
         if max_price is not None:
             statement = statement.where(Listing.price_cents <= max_price)
+
+        if keyword:
+            search_filter = f"%{keyword}%"
+            # Source: https://stackoverflow.com/questions/20363836/postgresql-ilike-query-with-sqlalchemy
+            # Source: https://stackoverflow.com/questions/7942547/using-or-in-sqlalchemy
+            statement = statement.filter(Listing.title.ilike(search_filter) | Listing.description.ilike(search_filter))
 
         statement = (
             statement.limit(pagination.card_num)
