@@ -27,14 +27,45 @@ function formatPhoneNumber(phone?: string | null) {
 function getStatusColor(status: string) {
   switch (status.toLowerCase()) {
     case "active":
-      return "bg-green-500 text-white";
+      return "bg-orange-500 text-white";
     case "pending":
-      return "bg-yellow-500 text-white";
+      return "bg-orange-400 text-white";
     case "sold":
-      return "bg-red-500 text-white";
+      return "bg-orange-200 text-orange-900";
     default:
-      return "bg-gray-500 text-white";
+      return "bg-gray-400 text-white";
   }
+}
+
+// ASSIGNS CATEGORY COLORS
+function getCategoryColor(category: string) {
+  switch (category.toLowerCase()) {
+    default:
+      return "bg-gray-400 text-white";
+  }
+}
+
+// ASSIGNS CONDITION COLORS
+function getConditionColor(condition: string) {
+  switch (condition.toLowerCase()) {
+    case "new":
+      return "bg-blue-600 text-white";
+    case "like new":
+      return "bg-blue-500 text-white";
+    case "very good":
+      return "bg-blue-400 text-blue-900"; 
+    case "good":
+      return "bg-blue-300 text-blue-900";
+    case "used":
+      return "bg-blue-200 text-blue-900";
+    default:
+      return "bg-gray-400 text-white";
+  }
+}
+
+// FORMAT CATEGORY/CONDITION TEXT
+function formatLabel(text: string) {
+  return text.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export default function ListingDetails({ loaderData }: Route.ComponentProps) {
@@ -68,18 +99,38 @@ export default function ListingDetails({ loaderData }: Route.ComponentProps) {
 
         {/* INFO */}
         <div className="w-full md:w-1/2 flex flex-col h-full">
-          {/* TITLE & STATUS */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+          {/* TITLE & BADGES */}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:gap-3">
             <h1 className="text-2xl sm:text-3xl font-semibold break-words">
               {listing.title}
             </h1>
-            <span
-              className={`mt-2 sm:mt-0 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                listing.status
-              )}`}
-            >
-              {listing.status.toUpperCase()}
-            </span>
+            <div className="flex flex-wrap gap-2 mt-2 sm:mt-1">
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                  listing.status
+                )}`}
+              >
+                {listing.status.toUpperCase()}
+              </span>
+              {listing.category && (
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+                    listing.category
+                  )}`}
+                >
+                  {formatLabel(listing.category.toUpperCase())}
+                </span>
+              )}
+              {listing.condition && (
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${getConditionColor(
+                    listing.condition
+                  )}`}
+                >
+                  {formatLabel(listing.condition).toUpperCase()}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* PRICE */}

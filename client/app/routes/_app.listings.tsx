@@ -71,7 +71,6 @@ export default function ListingsPage({}: Route.ComponentProps) {
   const cardsPerPage = 40; // WE CAN CHANGE THIS IF U WANT
   const [totalPages, setTotalPages] = useState<number>(1);
 
-  // Filter states
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set([]));
   const [selectedConditions, setSelectedConditions] = useState<Set<string>>(new Set([]));
   const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
@@ -95,26 +94,22 @@ export default function ListingsPage({}: Route.ComponentProps) {
         url += `&sort_by=${sort_by}&order=${order}`;
       }
 
-      // Add search term
       if (searchTerm.trim()) {
-        url += `&search=${encodeURIComponent(searchTerm.trim())}`;
+        url += `&keyword=${encodeURIComponent(searchTerm.trim())}`;
       }
 
-      // Add category filters
       if (selectedCategories.size > 0) {
         selectedCategories.forEach(cat => {
           url += `&category=${cat}`;
         });
       }
 
-      // Add condition filters
       if (selectedConditions.size > 0) {
         selectedConditions.forEach(cond => {
           url += `&condition=${cond}`;
         });
       }
 
-      // Add price range filters (convert dollars to cents)
       const [minPrice, maxPrice] = debouncedPriceRange;
       if (minPrice > 0) {
         url += `&min_price=${minPrice * 100}`;
@@ -123,7 +118,6 @@ export default function ListingsPage({}: Route.ComponentProps) {
         url += `&max_price=${maxPrice * 100}`;
       }
 
-      // Fetch listings
       const res = await fetch(url);
 
       if (!res.ok) {
@@ -137,12 +131,10 @@ export default function ListingsPage({}: Route.ComponentProps) {
         const parsed = listingsResponseSchema.parse(data);
         setListings(parsed);
 
-        // Calculate pages based on current result count
-        // If we got a full page, there might be more
         if (parsed.length === cardsPerPage) {
-          setTotalPages(pageNum + 1); // Show at least one more page
+          setTotalPages(pageNum + 1); 
         } else {
-          setTotalPages(pageNum); // This is the last page
+          setTotalPages(pageNum);
         }
       } else {
         setListings([]);
@@ -156,16 +148,14 @@ export default function ListingsPage({}: Route.ComponentProps) {
     }
   };
 
-  // Debounce price range changes
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedPriceRange(priceRange);
-    }, 800); // Wait 800ms after user stops moving slider
+    }, 800);
 
     return () => clearTimeout(timer);
   }, [priceRange]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
   }, [sortOption, selectedCategories, selectedConditions, debouncedPriceRange, searchTerm]);
