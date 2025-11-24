@@ -43,3 +43,5 @@ class Listing(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     category: Mapped[ListingCategory] = mapped_column(nullable=True)
     condition: Mapped[ListingCondition] = mapped_column(nullable=True)
+    # server_default was added to provide a default value at the database level so that SQL inserts use the default value, suggested by Copilot
+    image: Mapped[str] = mapped_column(String, default="images/listings/placeholder.jpg", server_default="images/listings/placeholder.jpg", nullable=True)
