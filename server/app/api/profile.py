@@ -40,6 +40,7 @@ async def get_me(
             "is_superuser": user.is_superuser,
             "phone_number": user.phone_number,
             "profile_picture": user.profile_picture,
+            "is_banned": user.is_banned,
       }
 
 
@@ -72,4 +73,5 @@ async def update_me(
         "is_superuser": user.is_superuser,
         "phone_number": user.phone_number,
         "profile_picture": user.profile_picture,
+        "is_banned": user.is_banned,
     }

@@ -7,7 +7,7 @@ from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String
+from sqlalchemy import String, Boolean
 from app.db.database import get_async_session
 from .base import Base
 from app.core.config import settings
@@ -20,6 +20,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     # server_default was added to provide a default value at the database level so that SQL inserts use the default value, suggested by Copilot
     profile_picture: Mapped[str] = mapped_column(String, default="images/profile/GatorAvatarTemporary.png", server_default="images/profile/GatorAvatarTemporary.png", nullable=True)
     listings: Mapped[List["Listing"]] = relationship(back_populates="seller", cascade="all, delete-orphan")
+    is_banned: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
 
 async def get_user_db(
     session: AsyncSession = Depends(get_async_session)
