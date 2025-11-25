@@ -14,14 +14,14 @@ export default function About() {
   // IF WE WANT WE CAN ADD A BLURB ABT US BUT EHH WE REALLY DONT NEED IT
   const developers = [
     {
-      name: "Alexander Wang",
-      role: "Frontend Developer",
-      img: "/public/alex.jpg",
-    },
-    {
       name: "Evelyn Colon",
       role: "Project Manager",
       img: "/public/evelyn.jpg",
+    },
+    {
+      name: "Alexander Wang",
+      role: "Frontend Developer",
+      img: "/public/alex.jpg",
     },
     {
       name: "Kali Schuchhardt",
