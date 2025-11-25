@@ -16,7 +16,7 @@ router = APIRouter()
 
 def check_admin(user):
     if not user.is_superuser:
-        raise HTTPException(status_code=401, detail="Must be administrator to access this page.")
+        raise HTTPException(status_code=403, detail="Must be administrator to access this page.")
 
 @router.get("/admin/users/total", tags=["admin"])
 async def get_total_users(
