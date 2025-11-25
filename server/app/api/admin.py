@@ -11,12 +11,44 @@ from app.auth.backend import fastapi_users
 from app.schemas.pagination import Pagination, SortEnum, pagination_params
 from app.schemas.listing import ListingResponse
 import uuid
+from app.api.listings import get_listings
 
 router = APIRouter()
 
 def check_admin(user):
     if not user.is_superuser:
         raise HTTPException(status_code=403, detail="Must be administrator to access this page.")
+    
+@router.get("/admin/listings", tags=["admin"], response_model=list[ListingResponse])
+async def get_listings_admin(
+    # in query parameters, specify page_num to indicate the page number and card_num to indicate the number of cards for pagination
+    pagination: Annotated[Pagination, Depends(pagination_params)],
+    async_session: AsyncSession = Depends(get_async_session),
+    sort_by: Optional[str] = Query("updated_at", description="Sort field: price, created_at, updated_at"),
+    order: Optional[str] = Query(SortEnum.DESC.value, description="Sort order: asc or desc"),
+
+    # Filters
+    status: Optional[str] = Query(None, description="Status value (matching ListingStatus enum)"),
+    category: Optional[str] = Query(None, description="Category value (matching ListingCategory enum)"),
+    condition: Optional[str] = Query(None, description="Condition value (matching ListingCondition enum)"),
+    min_price: Optional[int] = Query(None, ge=0),
+    max_price: Optional[int] = Query(None, ge=0),
+    keyword: Optional[str] = Query(None, description="Keyword to search in title or description"),
+    current_user = Depends(fastapi_users.current_user())
+):
+    check_admin(current_user)
+    return await get_listings(
+        pagination=pagination,
+        async_session=async_session,
+        sort_by=sort_by,
+        order=order,
+        status=status,
+        category=category,
+        condition=condition,
+        min_price=min_price,
+        max_price=max_price,
+        keyword=keyword
+    )
 
 @router.get("/admin/users/total", tags=["admin"])
 async def get_total_users(
