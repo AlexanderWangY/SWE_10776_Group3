@@ -45,6 +45,7 @@ class UserResponse(BaseModel):
     email: str
     is_superuser: bool
     is_verified: bool
+    is_banned: bool
     profile_picture: str | None
 
     @computed_field

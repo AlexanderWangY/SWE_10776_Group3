@@ -8,6 +8,7 @@ export const UserSchema = z.object({
   first_name: z.string().nullable(),
   last_name: z.string().nullable(),
   is_superuser: z.boolean(),
+  is_banned: z.boolean(),
   phone_number: z.string().nullable(),
   profile_picture_url: z.url().nullable(),
   profile_picture: z.string().nullable(),

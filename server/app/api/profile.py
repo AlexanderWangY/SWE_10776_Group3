@@ -38,6 +38,7 @@ async def get_me(
             "first_name": user.first_name,
             "last_name": user.last_name,
             "is_superuser": user.is_superuser,
+            "is_banned": user.is_banned,
             "phone_number": user.phone_number,
             "profile_picture": user.profile_picture,
       }
@@ -70,6 +71,7 @@ async def update_me(
         "first_name": user.first_name,
         "last_name": user.last_name,
         "is_superuser": user.is_superuser,
+        "is_banned": user.is_banned,
         "phone_number": user.phone_number,
         "profile_picture": user.profile_picture,
     }
