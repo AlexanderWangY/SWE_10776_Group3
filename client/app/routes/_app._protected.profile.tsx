@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Avatar, Spinner } from "@heroui/react";
+import { Avatar, Badge, Spinner } from "@heroui/react";
 import type { Route } from "./+types/_app._protected.profile";
 import { useUser } from "./_app._protected";
 import { useEffect, useState } from "react";
@@ -74,11 +74,24 @@ export default function Profile({}: Route.ComponentProps) {
   return (
     <main className="min-h-screen w-full">
       <div className="max-w-4xl mx-auto pt-16 flex flex-col gap-4 px-6">
-        <Avatar
-          name={hasName ? fullName : undefined}
-          src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
-          className="h-24 w-24"
-        />
+        <div className="relative">
+          {user.is_superuser && (
+            <Badge color="primary" content="ADMIN" placement="bottom-right">
+              <Avatar
+              name={hasName ? fullName : undefined}
+              src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
+              className="h-24 w-24"
+              />
+            </Badge>
+          )}
+          {!user.is_superuser && (
+            <Avatar
+            name={hasName ? fullName : undefined}
+            src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
+            className="h-24 w-24"
+            />
+          )}
+        </div>
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-semibold">
