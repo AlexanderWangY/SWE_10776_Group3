@@ -1,8 +1,27 @@
-import { BreadcrumbItem, Breadcrumbs, Button, Card, CardBody } from "@heroui/react";
+import { BreadcrumbItem, Breadcrumbs, Button } from "@heroui/react";
 import type { Route } from "./+types/_app.admin.listings_.$id";
 import { redirect, useNavigate } from "react-router";
 import { userContext } from "~/context";
 import { useState } from "react";
+
+interface AdminListing {
+  id: number;
+  title: string;
+  description?: string | null;
+  price_cents?: number | null;
+  status?: string | null;
+  category?: string | null;
+  condition?: string | null;
+  image?: string | null;
+  image_url?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  seller?: {
+    first_name?: string | null;
+    last_name?: string | null;
+    phone_number?: string | null;
+  } | null;
+}
 
 // LOADER 
 export async function loader({ params, context }: Route.LoaderArgs) {
@@ -11,12 +30,68 @@ export async function loader({ params, context }: Route.LoaderArgs) {
   if (!user) throw redirect("/login");
   if (!user.is_superuser) throw redirect("/");
 
+  const listingId = Number(params.id);
+  if (!Number.isFinite(listingId)) {
+    return { listing: null, user };
+  }
+
   const apiURL = import.meta.env.VITE_API_URL;
-  const res = await fetch(`${apiURL}/listings/${params.id}`, {
-    credentials: 'include',
-  });
-  if (!res.ok) throw new Error("Failed to fetch listing");
-  return { listing: await res.json(), user };
+  const perPage = 100;
+  let page = 1;
+  let listing: AdminListing | null = null;
+
+  try {
+    while (page <= 500) {
+      const res = await fetch(
+        `${apiURL}/admin/listings?page_num=${page}&card_num=${perPage}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) {
+        const detail = await res.json().catch(() => null);
+        throw new Error(detail?.detail ?? "Failed to fetch listing");
+      }
+
+      const data = (await res.json()) as AdminListing[];
+      if (!Array.isArray(data) || data.length === 0) {
+        break;
+      }
+
+      const found = data.find((item) => Number(item?.id) === listingId);
+      if (found) {
+        listing = found;
+        break;
+      }
+
+      if (data.length < perPage) {
+        break;
+      }
+
+      page += 1;
+    }
+  } catch (_err) {
+    listing = null;
+  }
+
+  try {
+    const detailRes = await fetch(`${apiURL}/listings/${listingId}`, {
+      credentials: "include",
+    });
+
+    if (detailRes.ok) {
+      const detail = (await detailRes.json()) as AdminListing;
+      listing = listing ? { ...listing, ...detail } : detail;
+    }
+  } catch (_err) {
+  }
+
+  if (listing) {
+    listing.id = listingId;
+  }
+
+  return { listing, user };
 }
 
 // FORMATS PHONE NUMBER PRETTY
@@ -28,8 +103,8 @@ function formatPhoneNumber(phone?: string | null) {
 }
 
 // ASSIGNS STATUSES TO COLORS FOR THE STATUS BADGE
-function getStatusColor(status: string) {
-  switch (status.toLowerCase()) {
+function getStatusColor(status?: string | null) {
+  switch ((status ?? "").toLowerCase()) {
     case "active":
       return "bg-orange-500 text-white";
     case "pending":
@@ -42,16 +117,16 @@ function getStatusColor(status: string) {
 }
 
 // ASSIGNS CATEGORY COLORS
-function getCategoryColor(category: string) {
-  switch (category.toLowerCase()) {
+function getCategoryColor(category?: string | null) {
+  switch ((category ?? "").toLowerCase()) {
     default:
       return "bg-gray-400 text-white";
   }
 }
 
 // ASSIGNS CONDITION COLORS
-function getConditionColor(condition: string) {
-  switch (condition.toLowerCase()) {
+function getConditionColor(condition?: string | null) {
+  switch ((condition ?? "").toLowerCase()) {
     case "new":
       return "bg-blue-600 text-white";
     case "like new":
@@ -73,12 +148,18 @@ function formatLabel(text: string) {
 }
 
 export default function AdminListingDetails({ loaderData }: Route.ComponentProps) {
-  const { listing } = loaderData;
+  const { listing } = loaderData as { listing: AdminListing | null };
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!listing) return <p>Listing not found.</p>;
+
+  const formattedPrice =
+    listing.price_cents != null ? `$${(listing.price_cents / 100).toFixed(2)}` : "N/A";
+  const sellerName = `${listing.seller?.first_name ?? ""} ${listing.seller?.last_name ?? ""}`
+    .trim();
+  const sellerPhone = formatPhoneNumber(listing.seller?.phone_number);
 
   const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete listing: ${listing.title}?`)) {
@@ -146,7 +227,7 @@ export default function AdminListingDetails({ loaderData }: Route.ComponentProps
                     listing.status
                   )}`}
                 >
-                  {listing.status.toUpperCase()}
+                  {(listing.status ?? "unknown").toUpperCase()}
                 </span>
                 {listing.category && (
                   <span
@@ -170,9 +251,7 @@ export default function AdminListingDetails({ loaderData }: Route.ComponentProps
             </div>
   
             {/* PRICE */}
-            <p className="text-xl font-semibold text-gray-800 mt-4">{`$${(
-              listing.price_cents / 100
-            ).toFixed(2)}`}</p>
+            <p className="text-xl font-semibold text-gray-800 mt-4">{formattedPrice}</p>
 
             {/* LISTING ID */}
           <p className="text-sm text-gray-600 mt-2">
@@ -184,10 +263,10 @@ export default function AdminListingDetails({ loaderData }: Route.ComponentProps
               <h2 className="text-sm font-semibold text-gray-700 mb-2">Seller Info:</h2>
               <div className="bg-blue-50 p-4 rounded-xl shadow-sm flex flex-col gap-1 text-gray-700 max-w-sm">
                 <p>
-                  <b>Name:</b> {listing.seller?.first_name} {listing.seller?.last_name}
+                  <b>Name:</b> {sellerName || "Unavailable"}
                 </p>
                 <p>
-                  <b>Phone:</b> {formatPhoneNumber(listing.seller?.phone_number)}
+                  <b>Phone:</b> {sellerPhone}
                 </p>
               </div>
             </div>
@@ -224,7 +303,7 @@ export default function AdminListingDetails({ loaderData }: Route.ComponentProps
             {/* SPACER & CREATED AT */}
             <div className="mt-auto pt-12">
               <p className="text-xs text-gray-400">
-                Created: {new Date(listing.created_at).toLocaleString()}
+                Created: {listing.created_at ? new Date(listing.created_at).toLocaleString() : "Unknown"}
               </p>
             </div>
           </div>

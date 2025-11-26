@@ -7,17 +7,20 @@ import { userContext } from "~/context";
 interface Listing {
   id: number;
   title: string;
-  description: string | null;
-  price_cents: number;
-  status: string;
-  category: string;
-  condition: string;
-  created_at: string;
-  seller: {
-    first_name: string | null;
-    last_name: string | null;
-    phone_number: string | null;
-  };
+  description?: string | null;
+  price_cents?: number | null;
+  status?: string | null;
+  category?: string | null;
+  condition?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  image?: string | null;
+  image_url?: string | null;
+  seller?: {
+    first_name?: string | null;
+    last_name?: string | null;
+    phone_number?: string | null;
+  } | null;
 }
 
 type SortField = 'price' | 'created_at' | 'updated_at';
@@ -54,7 +57,7 @@ export default function AdminListingsPage() {
         let page = 1;
         const aggregated: Listing[] = [];
         while (true) {
-          const url = `${apiURL}/listings?page_num=${page}&card_num=${perPage}&sort_by=${sortBy}&order=${order}`;
+          const url = `${apiURL}/admin/listings?page_num=${page}&card_num=${perPage}&sort_by=${sortBy}&order=${order}`;
           const res = await fetch(url, { credentials: 'include' });
           if (!res.ok) {
             const msg = await res.json().catch(() => ({}));
@@ -73,7 +76,49 @@ export default function AdminListingsPage() {
             break;
           }
         }
-        if (!cancelled) setListings(aggregated);
+        if (!cancelled) {
+          const listingsNeedingSeller = aggregated.filter((item) => {
+            const first = item.seller?.first_name?.trim();
+            const last = item.seller?.last_name?.trim();
+            return !first && !last;
+          });
+
+          if (listingsNeedingSeller.length > 0) {
+            const detailTargets = listingsNeedingSeller.slice(0, 50);
+            const detailFetches = await Promise.allSettled(
+              detailTargets.map(async (item) => {
+                const detailRes = await fetch(`${apiURL}/listings/${item.id}`, {
+                  credentials: 'include',
+                });
+
+                if (!detailRes.ok) {
+                  const msg = await detailRes.json().catch(() => ({}));
+                  throw new Error(msg.detail || `Failed to fetch listing ${item.id}`);
+                }
+
+                const detail = await detailRes.json();
+                return { id: item.id, detail };
+              })
+            );
+
+            detailFetches.forEach((result) => {
+              if (result.status === 'fulfilled') {
+                const idx = aggregated.findIndex(
+                  (listing) => Number(listing.id) === Number(result.value.id)
+                );
+                if (idx !== -1) {
+                  aggregated[idx] = { ...aggregated[idx], ...result.value.detail };
+                }
+              }
+            });
+          }
+
+          if (cancelled) {
+            return;
+          }
+
+          setListings([...aggregated]);
+        }
       } catch (err: any) {
         if (!cancelled) setError(err.message || 'Failed to load listings');
       } finally {
@@ -84,15 +129,21 @@ export default function AdminListingsPage() {
     return () => { cancelled = true; };
   }, [sortBy, order]);
 
-  const formatPrice = (cents: number) => {
+  const formatPrice = (cents: number | null | undefined) => {
+    if (cents == null) {
+      return "N/A";
+    }
     return `$${(cents / 100).toFixed(2)}`;
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) {
+      return "Unknown";
+    }
     return new Date(dateString).toLocaleDateString();
   };
 
-   const formatPhone = (phone: string | null) => {
+  const formatPhone = (phone: string | null | undefined) => {
     if (!phone) return "No phone";
     const digits = phone.replace(/\D/g, "");
     if (digits.length === 10) {
@@ -101,8 +152,8 @@ export default function AdminListingsPage() {
     return phone;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+  const getStatusColor = (status: string | null | undefined) => {
+    switch ((status ?? "").toLowerCase()) {
       case 'active': return 'success';
       case 'sold': return 'default';
       case 'draft': return 'warning';
@@ -207,32 +258,32 @@ export default function AdminListingsPage() {
                       {formatPrice(listing.price_cents)}
                     </TableCell>
                     <TableCell className="text-center">
-                      {(listing.seller.first_name || listing.seller.last_name) ? (
-                        <span className="font-medium">{`${listing.seller.first_name || ''} ${listing.seller.last_name || ''}`.trim()}</span>
+                      {(listing.seller?.first_name || listing.seller?.last_name) ? (
+                        <span className="font-medium">{`${listing.seller?.first_name || ''} ${listing.seller?.last_name || ''}`.trim()}</span>
                       ) : (
                         <span className="text-gray-400 italic">No name</span>
                       )}
                     </TableCell>
                     <TableCell className="text-center">
-                      {listing.seller.phone_number ? (
-                        formatPhone(listing.seller.phone_number)
+                      {listing.seller?.phone_number ? (
+                        formatPhone(listing.seller?.phone_number)
                       ) : (
                         <span className="text-gray-400 italic">No phone</span>
                       )}
                     </TableCell>
                     <TableCell className="text-center">
                       <Chip size="sm" variant="flat" color="warning">
-                        {listing.category.replace(/_/g, ' ').toUpperCase()}
+                        {listing.category ? listing.category.replace(/_/g, ' ').toUpperCase() : 'UNKNOWN'}
                       </Chip>
                     </TableCell>
                     <TableCell className="text-center">
                       <Chip size="sm" variant="flat" color="primary">
-                        {listing.condition.replace(/_/g, ' ').toUpperCase()}
+                        {listing.condition ? listing.condition.replace(/_/g, ' ').toUpperCase() : 'UNKNOWN'}
                       </Chip>
                     </TableCell>
                     <TableCell className="text-center">
                       <Chip size="sm" variant="flat" color={getStatusColor(listing.status)}>
-                        {listing.status.toUpperCase()}
+                        {(listing.status ?? 'UNKNOWN').toUpperCase()}
                       </Chip>
                     </TableCell>
                     <TableCell className="text-sm text-gray-600 text-center">
