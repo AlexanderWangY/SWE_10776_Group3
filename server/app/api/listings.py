@@ -12,32 +12,6 @@ from app.schemas.pagination import Pagination, SortEnum, pagination_params
 
 router = APIRouter()
 
-@router.get("/listings/total", tags=["listings"])
-async def get_total_listings(
-    async_session: AsyncSession = Depends(get_async_session)
-):
-    async with async_session as session:
-        total = await session.scalar(select(func.count(Listing.id)))
-        return {"total": total}
-
-@router.get("/listings/{listing_id}", tags=["listings"], response_model=UserListingResponse)
-async def get_listing_by_id(
-    listing_id: int,
-    async_session: AsyncSession = Depends(get_async_session)
-):
-    async with async_session as session:
-        statement = (
-            select(Listing)
-            .options(selectinload(Listing.seller))
-            .where(Listing.id == listing_id)
-        )
-        result = await session.scalars(statement)
-        listing = result.one()
-        return listing
-
-# Pagination tutorial: https://www.youtube.com/watch?v=Em6OzzcO9Xo
-# https://stackoverflow.com/questions/74941021/using-sqlalchemy-what-is-a-good-way-to-load-related-object-that-are-were-not-ea
-@router.get("/listings", tags=["listings"], response_model=list[UserListingResponse])
 async def get_listings(
     # in query parameters, specify page_num to indicate the page number and card_num to indicate the number of cards for pagination
     pagination: Annotated[Pagination, Depends(pagination_params)],
@@ -52,7 +26,6 @@ async def get_listings(
     min_price: Optional[int] = Query(None, ge=0),
     max_price: Optional[int] = Query(None, ge=0),
     keyword: Optional[str] = Query(None, description="Keyword to search in title or description")
-
 ):
     sort_fields = {
         "id": Listing.title,
@@ -119,3 +92,58 @@ async def get_listings(
         result = await session.scalars(statement)
         listings = result.all()
         return listings
+    
+@router.get("/listings/total", tags=["listings"])
+async def get_total_listings(
+    async_session: AsyncSession = Depends(get_async_session)
+):
+    async with async_session as session:
+        total = await session.scalar(select(func.count(Listing.id)))
+        return {"total": total}
+
+@router.get("/listings/{listing_id}", tags=["listings"], response_model=UserListingResponse)
+async def get_listing_by_id(
+    listing_id: int,
+    async_session: AsyncSession = Depends(get_async_session)
+):
+    async with async_session as session:
+        statement = (
+            select(Listing)
+            .options(selectinload(Listing.seller))
+            .where(Listing.id == listing_id)
+        )
+        result = await session.scalars(statement)
+        listing = result.one()
+        return listing
+
+# Pagination tutorial: https://www.youtube.com/watch?v=Em6OzzcO9Xo
+# https://stackoverflow.com/questions/74941021/using-sqlalchemy-what-is-a-good-way-to-load-related-object-that-are-were-not-ea
+@router.get("/listings", tags=["listings"], response_model=list[UserListingResponse])
+async def get_listings_standard(
+    # in query parameters, specify page_num to indicate the page number and card_num to indicate the number of cards for pagination
+    pagination: Annotated[Pagination, Depends(pagination_params)],
+    async_session: AsyncSession = Depends(get_async_session),
+    sort_by: Optional[str] = Query("updated_at", description="Sort field: price, created_at, updated_at"),
+    order: Optional[str] = Query(SortEnum.DESC.value, description="Sort order: asc or desc"),
+
+    # Filters
+    status: Optional[str] = Query(None, description="Status value (matching ListingStatus enum)"),
+    category: Optional[str] = Query(None, description="Category value (matching ListingCategory enum)"),
+    condition: Optional[str] = Query(None, description="Condition value (matching ListingCondition enum)"),
+    min_price: Optional[int] = Query(None, ge=0),
+    max_price: Optional[int] = Query(None, ge=0),
+    keyword: Optional[str] = Query(None, description="Keyword to search in title or description")
+
+):
+    return await get_listings(
+        pagination=pagination,
+        async_session=async_session,
+        sort_by=sort_by,
+        order=order,
+        status=status,
+        category=category,
+        condition=condition,
+        min_price=min_price,
+        max_price=max_price,
+        keyword=keyword
+    )

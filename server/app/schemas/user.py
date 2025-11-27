@@ -6,6 +6,7 @@ from app.models.listing import ListingStatus
 from datetime import datetime
 from app.core.config import settings
 from app.models.user import User
+from enum import Enum
 
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
@@ -55,4 +56,3 @@ class UserResponse(BaseModel):
             return None
 
         return f"{settings.base_url}/static/{self.profile_picture}" # Source: https://github.com/fastapi/fastapi/discussions/9430/
-    

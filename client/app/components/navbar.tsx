@@ -14,6 +14,7 @@ import {
   NavbarMenuToggle,
   NavbarMenu,
   NavbarMenuItem,
+  Badge,
 } from "@heroui/react";
 import OurLogo from "../components/logo";
 import { useLocation, useNavigate } from "react-router";
@@ -106,25 +107,57 @@ export default function AppNavbar({ user }: Props) {
       <NavbarContent justify="end">
         {user ? (
           <Dropdown placement="bottom-end">
-            <DropdownTrigger>
-              <Avatar
-                isBordered
-                className="transition-transform cursor-pointer"
-                color="primary"
-                disableAnimation
-                name={
-                  `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
-                }
-                size="sm"
-                src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
-              />
-            </DropdownTrigger>
+            {user.is_superuser ? (
+              <Badge 
+                color="primary" 
+                content="ADMIN" 
+                size="sm" 
+                placement="bottom-right" 
+                classNames={{
+                  badge: "text-[8px] px-0.5 h-3.5 min-w-[32px] translate-y-2.5"
+                }}
+              >
+                <DropdownTrigger>
+                  <Avatar
+                    isBordered
+                    className="transition-transform cursor-pointer"
+                    color="primary"
+                    disableAnimation
+                    name={
+                      `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
+                    }
+                    size="sm"
+                    src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
+                  />
+                </DropdownTrigger>
+              </Badge>
+            ) : (
+              <DropdownTrigger>
+                <Avatar
+                  isBordered
+                  className="transition-transform cursor-pointer"
+                  color="primary"
+                  disableAnimation
+                  name={
+                    `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
+                  }
+                  size="sm"
+                  src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
+                />
+              </DropdownTrigger>
+            )}
             <DropdownMenu aria-label="Profile Actions" variant="flat">
               <DropdownItem key="profile" className="h-14 gap-2" disableAnimation>
                 <p className="font-semibold">Signed in as</p>
                 <p className="font-semibold">{user.email}</p>
               </DropdownItem>
+              {user.is_superuser ? (
+                <DropdownItem key="admin" href="/admin">Admin Dashboard</DropdownItem>
+              ) : null}
               <DropdownItem key="settings" href="/profile">My Profile</DropdownItem>
+              {!user.is_superuser ?(
+                <DropdownItem key="report-user" href="https://docs.google.com/forms/d/e/1FAIpQLSfOMKpBLSYqOFEiFsC8QhY4kMuPH64YhwwSQZotHlOYwwyidQ/viewform?usp=header">Report A User</DropdownItem>
+              ): null}
               <DropdownItem key="logout" color="danger" onClick={handleLogout}>
                 Log Out
               </DropdownItem>
