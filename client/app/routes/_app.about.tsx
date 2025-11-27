@@ -1,7 +1,7 @@
 "use client";
-import { Card, CardHeader, CardBody, CardFooter } from "@heroui/react";
+import { Card, CardHeader, CardBody, CardFooter, Breadcrumbs, BreadcrumbItem } from "@heroui/react";
 import { useEffect, useState } from "react";
-import AppNavbar from "../components/navbar";
+import { Link } from "react-router";
 
 export default function About() {
   const [isVisible, setIsVisible] = useState(false);
@@ -17,21 +17,25 @@ export default function About() {
       name: "Evelyn Colon",
       role: "Project Manager",
       img: "/public/evelyn.jpg",
+      link: "https://www.linkedin.com/in/evelyn-colon-0074a8279/",
     },
     {
       name: "Alexander Wang",
       role: "Frontend Developer",
       img: "/public/alex.jpg",
+      link: "https://www.linkedin.com/in/alexanderwangy/"
     },
     {
       name: "Kali Schuchhardt",
       role: "Frontend Developer",
       img: "/public/kali.jpg",
+      link: "https://www.linkedin.com/in/kalischuchhardt984/",
     },
     {
       name: "Anders Swenson",
       role: "Backend Developer",
       img: "/public/anders.jpg",
+      link: "https://www.linkedin.com/in/anders-swenson/",
     },
   ];
 
@@ -41,7 +45,11 @@ export default function About() {
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
-      <main className="flex flex-col items-center w-full mt-10 px-5 flex-grow mb-10">
+      <main className="flex flex-col items-center w-full px-5 flex-grow py-10 gap-6">
+        <Breadcrumbs className="w-full max-w-4xl text-sm text-default-400">
+          <BreadcrumbItem href="/">Home</BreadcrumbItem>
+          <BreadcrumbItem>About</BreadcrumbItem>
+        </Breadcrumbs>
         <Card
           className={`max-w-4xl w-full shadow-2xl shadow-blue-950/50 bg-gradient-to-tr from-zinc-50/80 to-zinc-200/80 
                      rounded-2xl p-8 backdrop-blur-md ${isVisible ? "animate-fadeup" : ""}`}
@@ -57,8 +65,8 @@ export default function About() {
 
           <CardBody className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-0">
             {developers.map((dev, index) => (
+              <Link to={dev.link} target="_blank" rel="noopener noreferrer" key={index}>
               <div
-                key={index}
                 className="flex flex-col items-center text-center bg-white/60 rounded-xl shadow-lg p-6 hover:scale-105 transition-transform duration-300"
               >
                 <img
@@ -69,6 +77,7 @@ export default function About() {
                 <h2 className="text-blue-900 font-semibold text-xl">{dev.name}</h2>
                 <h3 className="text-blue-700 font-medium text-md">{dev.role}</h3>
               </div>
+              </Link>
             ))}
           </CardBody>
 
