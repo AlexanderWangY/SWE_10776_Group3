@@ -89,6 +89,40 @@ async def get_user_listings_by_id(
         listings = result.all()
         return listings
     
+@router.post("/admin/users/{user_id}/ban", tags=["admin"], response_model=UserResponse)
+async def ban_user_by_id(
+    user_id: uuid.UUID,
+    async_session: AsyncSession = Depends(get_async_session),
+    current_user = Depends(fastapi_users.current_user()),
+):
+    check_admin(current_user)
+    result = await async_session.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found.")
+    if not user.is_banned:
+        user.is_banned = True
+        await async_session.commit()
+        await async_session.refresh(user)
+    return user
+
+@router.post("/admin/users/{user_id}/unban", tags=["admin"], response_model=UserResponse)
+async def unban_user_by_id(
+    user_id: uuid.UUID,
+    async_session: AsyncSession = Depends(get_async_session),
+    current_user = Depends(fastapi_users.current_user()),
+):
+    check_admin(current_user)
+    result = await async_session.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found.")
+    if user.is_banned:
+        user.is_banned = False
+        await async_session.commit()
+        await async_session.refresh(user)
+    return user
+    
 @router.get("/admin/users", tags=["admin"], response_model=list[UserResponse])
 async def get_users(
     # in query parameters, specify page_num to indicate the page number and card_num to indicate the number of cards for pagination
