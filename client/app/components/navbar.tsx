@@ -155,6 +155,7 @@ export default function AppNavbar({ user }: Props) {
                 <DropdownItem key="admin" href="/admin">Admin Dashboard</DropdownItem>
               ) : null}
               <DropdownItem key="settings" href="/profile">My Profile</DropdownItem>
+              <DropdownItem key="new-listings" href="/listings/new">Create a Listing</DropdownItem>
               {!user.is_superuser ?(
                 <DropdownItem key="report-user" href="https://docs.google.com/forms/d/e/1FAIpQLSfOMKpBLSYqOFEiFsC8QhY4kMuPH64YhwwSQZotHlOYwwyidQ/viewform?usp=header">Report A User</DropdownItem>
               ): null}

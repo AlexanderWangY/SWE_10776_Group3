@@ -32,7 +32,6 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
         message = typeof body.detail === "string" ? body.detail : message;
       }
     } catch (error) {
-      // Ignore JSON parse errors, fall back to status message
     }
     throw new Error(message);
   }
