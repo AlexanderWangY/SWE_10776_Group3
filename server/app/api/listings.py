@@ -196,7 +196,7 @@ async def create_listing(
             title=title,
             seller_id=user.id,
             description=description,
-            price_cents=int(price),
+            price_cents=int(price) * 100,
             status=ListingStatus.ACTIVE,
             category=category,
             condition=condition,
