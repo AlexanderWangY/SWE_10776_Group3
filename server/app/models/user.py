@@ -2,8 +2,8 @@ import uuid
 import resend
 
 from typing import List
-from fastapi import Depends
-from fastapi_users import BaseUserManager, UUIDIDMixin
+from fastapi import Depends, HTTPException
+from fastapi_users import BaseUserManager, UUIDIDMixin, models
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -56,6 +56,11 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     async def on_after_verify(self, user, request = None):
         print(f"User {user.id} has been verified.")
 
+    async def authenticate(self, credentials) -> User | None:
+        user = await super().authenticate(credentials)
+        if user and getattr(user, "is_banned", False):
+            raise HTTPException(status_code=403, detail="This account has been banned.")
+        return user
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
     yield UserManager(user_db)

@@ -51,7 +51,7 @@ export const fetchAdminUser = async (userId: string): AdminUserResult => {
 
 export const banAdminUser = async (userId: string): AdminUserResult => {
   return handleResponse<AdminUser>(
-    await fetch(`${API_URL}/admin/users/${userId}/ban`, buildOptions({ method: "POST" }))
+    await fetch(`${API_URL}/admin/users/${userId}/ban`, buildOptions({ method: "POST" })),
   );
 };
 
