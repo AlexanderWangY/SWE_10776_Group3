@@ -1,13 +1,10 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from app.auth.backend import fastapi_users, auth_backend
 from app.db.database import get_async_session, AsyncSession
-from app.schemas.user import UserRead, UserCreate, CustomUserUpdate, UserResponse
+from app.schemas.user import CustomUserUpdate, UserResponse
 from app.models.listing import Listing
 from app.schemas.listing import ListingResponse, UserListingResponse
-from app.models.user import get_user_manager, User
-from fastapi_users.manager import BaseUserManager
-from fastapi_users import exceptions, models
-from fastapi.responses import RedirectResponse
+from app.models.user import User
 from app.core.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_async_session

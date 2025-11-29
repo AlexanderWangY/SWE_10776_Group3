@@ -4,16 +4,58 @@ from typing import Annotated, Optional
 from app.models.listing import Listing, ListingCategory, ListingCondition, ListingStatus
 from app.schemas.user import UserResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, asc, desc, func
+from sqlalchemy import select, asc, desc, func, update
 from sqlalchemy.orm import selectinload
 from app.models.user import User
 from app.auth.backend import fastapi_users
 from app.schemas.pagination import Pagination, SortEnum, pagination_params
-from app.schemas.listing import ListingResponse
+from app.schemas.listing import ListingResponse, UserListingResponse
 import uuid
 from app.api.listings import get_listings
 
 router = APIRouter()
+
+@router.post("/admin/users/{user_id}/deactivate_listings", tags=["admin"], response_model=list[ListingResponse])
+async def deactivate_user_listings(
+    user_id: uuid.UUID,
+    async_session: AsyncSession = Depends(get_async_session),
+    current_user = Depends(fastapi_users.current_user())
+):
+    check_admin(current_user)
+    async with async_session as session:
+        statement = (
+            update(Listing)
+            .where(Listing.seller_id == user_id)
+            .values(status=ListingStatus.INACTIVE.value)
+        )
+        await session.execute(statement)
+        await session.commit()
+        new_statement = select(Listing).where(Listing.seller_id == user_id)
+        result = await session.scalars(new_statement)
+        listings = result.all()
+        return listings
+
+
+@router.post("/admin/users/{user_id}/activate_listings", tags=["admin"], response_model=list[ListingResponse])
+async def activate_user_listings(
+    user_id: uuid.UUID,
+    async_session: AsyncSession = Depends(get_async_session),
+    current_user = Depends(fastapi_users.current_user())
+):
+    check_admin(current_user)
+    async with async_session as session:
+        statement = (
+            update(Listing)
+            .where(Listing.seller_id == user_id)
+            .values(status=ListingStatus.ACTIVE.value)
+        )
+        await session.execute(statement)
+        await session.commit()
+        new_statement = select(Listing).where(Listing.seller_id == user_id)
+        result = await session.scalars(new_statement)
+        listings = result.all()
+        return listings
+    
 
 def check_admin(user):
     if not user.is_superuser:
