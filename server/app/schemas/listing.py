@@ -1,7 +1,9 @@
+import uuid
 from pydantic import BaseModel, ConfigDict, computed_field, field_serializer
 from app.models.listing import ListingStatus, ListingCategory, ListingCondition
 from datetime import datetime
 from app.core.config import settings
+from fastapi import UploadFile, File
 
 # Source: https://medium.com/@ajaygohil2563/unlocking-the-power-of-nested-pydantic-schemas-in-fastapi-d7c872423aa4
 
