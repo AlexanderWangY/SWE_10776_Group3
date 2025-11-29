@@ -151,7 +151,7 @@ export default function NewListing() {
 
         try {
             const apiURL = import.meta.env.VITE_API_URL;
-            const response = await fetch(`${apiURL}/listings`, {
+            const response = await fetch(`${apiURL}/listings/new`, {
                 method: "POST",
                 body: formData,
                 credentials: "include",
