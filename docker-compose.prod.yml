@@ -1,0 +1,37 @@
+
+services:
+  server:
+    build:
+      context: ./server
+      target: prod
+    restart: unless-stopped
+    expose:
+      - "8080"
+    env_file: ./server/.env
+    volumes:
+      - venv_data:/app/.venv
+
+  nginx:
+    image: nginx:stable
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/html:/usr/share/nginx/html
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./nginx/certs:/etc/letsencrypt
+      - ./nginx/html:/usr/share/nginx/html
+    entrypoint: >
+      sh -c "trap exit TERM;
+             while :; do sleep 12h & wait $${!};
+             certbot renew; done"
+
+volumes:
+  # this change was made by copilot when debugging database migration issues
+  venv_data:
