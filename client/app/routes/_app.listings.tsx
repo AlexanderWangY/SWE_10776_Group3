@@ -96,7 +96,7 @@ export default function ListingsPage({}: Route.ComponentProps) {
     try {
       const apiURL = import.meta.env.VITE_API_URL;
 
-      let filterParams = "";
+      let filterParams = "&status=active";
 
       if (sortQuery) {
         const [sort_by, orderPart] = sortQuery.split("&");
