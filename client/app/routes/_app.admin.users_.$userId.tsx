@@ -1,6 +1,6 @@
 import { useParams, Link, redirect } from "react-router";
 import { Card, CardBody, CardHeader, Chip, Spinner, Avatar, Divider, Breadcrumbs, BreadcrumbItem, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Route } from "./+types/_app.admin.users_.$userId";
 import { userContext } from "~/context";
 
@@ -62,49 +62,104 @@ export default function AdminUserDetailPage({ loaderData }: Route.ComponentProps
   const [banLoading, setBanLoading] = useState(false);
   const [banError, setBanError] = useState<string | null>(null);
   const [banSuccess, setBanSuccess] = useState<string | null>(null);
+  const apiURL = import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const apiURL = import.meta.env.VITE_API_URL;
-        const response = await fetch(`${apiURL}/admin/users/${userId}`, {
-          credentials: 'include',
-        });
+  const extractErrorMessage = useCallback(async (response: Response, fallback: string) => {
+    try {
+      const contentType = response.headers.get("content-type") || "";
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch user');
+      if (contentType.includes("application/json")) {
+        const body = await response.json();
+        const detail = body?.detail ?? body?.message ?? body;
+
+        if (typeof detail === "string") {
+          return detail;
         }
 
-        const data = await response.json();
-        setUser(data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load user');
-      } finally {
-        setLoading(false);
-      }
-    };
+        if (Array.isArray(detail)) {
+          return detail
+            .map((item) =>
+              typeof item === "string"
+                ? item
+                : typeof item === "object"
+                ? JSON.stringify(item)
+                : String(item)
+            )
+            .join("\n");
+        }
 
-    fetchUser();
-  }, [userId]);
+        if (typeof detail === "object" && detail !== null) {
+          if ("message" in detail && typeof detail.message === "string") {
+            return detail.message;
+          }
+          return JSON.stringify(detail);
+        }
+      } else {
+        const text = await response.text();
+        if (text) {
+          return text;
+        }
+      }
+    } catch (parseError) {
+      // ignore parsing errors and fall back to generic message
+    }
+
+    return fallback;
+  }, []);
+
+  const loadUser = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${apiURL}/admin/users/${userId}`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user");
+      }
+
+      const data = await response.json();
+      setUser(data);
+    } catch (err: any) {
+      setError(err?.message || "Failed to load user");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiURL, userId]);
+
+  const loadListings = useCallback(async () => {
+    if (!userId) return;
+    setListingsLoading(true);
+    setListingsError(null);
+
+    try {
+      const response = await fetch(`${apiURL}/admin/users/${userId}/listings`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user listings");
+      }
+
+      const data = await response.json();
+      setListings(data);
+    } catch (err: any) {
+      setListingsError(err?.message || "Failed to load user listings");
+    } finally {
+      setListingsLoading(false);
+    }
+  }, [apiURL, userId]);
 
   useEffect(() => {
-    const fetchUserListings = async () => {
-      try {
-        const apiURL = import.meta.env.VITE_API_URL;
-        const response = await fetch(`${apiURL}/admin/users/${userId}/listings`, {
-          credentials: 'include',
-        });
-        if (!response.ok) throw new Error('Failed to fetch user listings');
-        const data = await response.json();
-        setListings(data);
-      } catch (err: any) {
-        setListingsError(err.message || 'Failed to load user listings');
-      } finally {
-        setListingsLoading(false);
-      }
-    };
-    fetchUserListings();
-  }, [userId]);
+    loadUser();
+  }, [loadUser]);
+
+  useEffect(() => {
+    loadListings();
+  }, [loadListings]);
 
   const handleBanToggle = async () => {
     if (!userId || !user) return;
@@ -113,27 +168,51 @@ export default function AdminUserDetailPage({ loaderData }: Route.ComponentProps
     setBanSuccess(null);
 
     const shouldBan = !user?.is_banned;
-    const apiURL = import.meta.env.VITE_API_URL;
-    const endpoint = `${apiURL}/admin/users/${userId}/${shouldBan ? 'ban' : 'unban'}`;
+    const statusEndpoint = `${apiURL}/admin/users/${userId}/${shouldBan ? "ban" : "unban"}`;
+    const listingsEndpoint = `${apiURL}/admin/users/${userId}/${shouldBan ? "deactivate_listings" : "activate_listings"}`;
 
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        credentials: 'include',
+      const response = await fetch(statusEndpoint, {
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to ${shouldBan ? 'ban' : 'unban'} user`);
+        const message = await extractErrorMessage(
+          response,
+          `Failed to ${shouldBan ? "ban" : "unban"} user.`
+        );
+        throw new Error(message);
       }
 
       const updatedUser = await response.json();
       setUser(updatedUser);
-      setBanSuccess(shouldBan ? 'User banned successfully.' : 'User reinstated successfully.');
+
+      const listingsResponse = await fetch(listingsEndpoint, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!listingsResponse.ok) {
+        const message = await extractErrorMessage(
+          listingsResponse,
+          `${shouldBan ? "User banned" : "User unbanned"}, but listing update failed.`
+        );
+        throw new Error(message);
+      }
+
+      await loadListings();
+
+      setBanSuccess(
+        shouldBan
+          ? "User banned and listings deactivated successfully."
+          : "User reinstated and listings reactivated successfully."
+      );
     } catch (err: any) {
-      setBanError(err.message || `Unable to ${shouldBan ? 'ban' : 'unban'} user`);
+      setBanError(err?.message || `Unable to ${shouldBan ? "ban" : "unban"} user`);
     } finally {
       setBanLoading(false);
     }
