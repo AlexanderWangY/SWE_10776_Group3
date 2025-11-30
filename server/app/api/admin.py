@@ -130,6 +130,15 @@ async def get_user_listings_by_id(
         result = await session.scalars(statement)
         listings = result.all()
         return listings
+
+def check_ban_request(
+    user: User,
+    current_user = Depends(fastapi_users.current_user())
+):
+    if current_user.id == user.id:
+        raise HTTPException(status_code=400, detail="Administrators cannot ban themselves.")
+    if user.is_superuser:
+        raise HTTPException(status_code=400, detail="Administrators cannot ban other administrators.")
     
 @router.post("/admin/users/{user_id}/ban", tags=["admin"], response_model=UserResponse)
 async def ban_user_by_id(
@@ -142,6 +151,7 @@ async def ban_user_by_id(
     user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found.")
+    check_ban_request(user, current_user)
     if not user.is_banned:
         user.is_banned = True
         await async_session.commit()
