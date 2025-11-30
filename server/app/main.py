@@ -9,14 +9,16 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, JSONResponse
 
 origins = [settings.base_url, settings.frontend_url]
+allow_origins = origins + [
+    "https://www.gatormarket.com",
+    "https://gatormarket.com"
+]
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins.extend(
-        ["https://www.gatormarket.com", "https://gatormarket.com"]
-    ),
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
