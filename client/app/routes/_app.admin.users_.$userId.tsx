@@ -64,6 +64,49 @@ export default function AdminUserDetailPage({ loaderData }: Route.ComponentProps
   const [banSuccess, setBanSuccess] = useState<string | null>(null);
   const apiURL = import.meta.env.VITE_API_URL;
 
+  const extractErrorMessage = useCallback(async (response: Response, fallback: string) => {
+    try {
+      const contentType = response.headers.get("content-type") || "";
+
+      if (contentType.includes("application/json")) {
+        const body = await response.json();
+        const detail = body?.detail ?? body?.message ?? body;
+
+        if (typeof detail === "string") {
+          return detail;
+        }
+
+        if (Array.isArray(detail)) {
+          return detail
+            .map((item) =>
+              typeof item === "string"
+                ? item
+                : typeof item === "object"
+                ? JSON.stringify(item)
+                : String(item)
+            )
+            .join("\n");
+        }
+
+        if (typeof detail === "object" && detail !== null) {
+          if ("message" in detail && typeof detail.message === "string") {
+            return detail.message;
+          }
+          return JSON.stringify(detail);
+        }
+      } else {
+        const text = await response.text();
+        if (text) {
+          return text;
+        }
+      }
+    } catch (parseError) {
+      // ignore parsing errors and fall back to generic message
+    }
+
+    return fallback;
+  }, []);
+
   const loadUser = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
@@ -138,7 +181,11 @@ export default function AdminUserDetailPage({ loaderData }: Route.ComponentProps
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to ${shouldBan ? "ban" : "unban"} user`);
+        const message = await extractErrorMessage(
+          response,
+          `Failed to ${shouldBan ? "ban" : "unban"} user.`
+        );
+        throw new Error(message);
       }
 
       const updatedUser = await response.json();
@@ -150,10 +197,11 @@ export default function AdminUserDetailPage({ loaderData }: Route.ComponentProps
       });
 
       if (!listingsResponse.ok) {
-        const detail = await listingsResponse.text();
-        throw new Error(
-          `${shouldBan ? "User banned" : "User unbanned"}, but listing update failed${detail ? `: ${detail}` : "."}`
+        const message = await extractErrorMessage(
+          listingsResponse,
+          `${shouldBan ? "User banned" : "User unbanned"}, but listing update failed.`
         );
+        throw new Error(message);
       }
 
       await loadListings();
