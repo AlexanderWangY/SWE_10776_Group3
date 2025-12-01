@@ -11,6 +11,7 @@ class SellerResponse(BaseModel):
     first_name: str
     last_name: str
     phone_number: str
+    email: str
 
 class UserListingResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
