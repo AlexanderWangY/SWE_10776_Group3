@@ -145,9 +145,15 @@ export default function ListingDetails({ loaderData }: Route.ComponentProps) {
               <p>
                 <b>Name:</b> {listing.seller?.first_name} {listing.seller?.last_name}
               </p>
-              <p>
-                <b>Phone:</b> {formatPhoneNumber(listing.seller?.phone_number)}
-              </p>
+              {listing.seller?.phone_number ? (
+                <p>
+                  <b>Phone:</b> {formatPhoneNumber(listing.seller?.phone_number) ?? "No contact info available"}
+                </p>
+              ) : (
+                <p>
+                  <b>Email:</b> {listing.seller?.email ?? listing.seller_email ?? "No contact info available"}
+                </p>
+              )}
             </div>
           </div>
 
