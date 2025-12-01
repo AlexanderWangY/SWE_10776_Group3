@@ -1,7 +1,14 @@
 "use client";
 import { Card, CardHeader, CardBody, CardFooter, Breadcrumbs, BreadcrumbItem } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
+
+interface Developer {
+  name: string;
+  role: string;
+  link: string;
+  img: string;
+}
 
 export default function About() {
   const [isVisible, setIsVisible] = useState(false);
@@ -11,33 +18,65 @@ export default function About() {
     return () => clearTimeout(timeout);
   }, []);
 
-  // IF WE WANT WE CAN ADD A BLURB ABT US BUT EHH WE REALLY DONT NEED IT
-  const developers = [
-    {
-      name: "Evelyn Colon",
-      role: "Project Manager",
-      img: "/public/evelyn.jpg",
-      link: "https://www.linkedin.com/in/evelyn-colon-0074a8279/",
-    },
-    {
-      name: "Alexander Wang",
-      role: "Frontend Developer",
-      img: "/public/alex.jpg",
-      link: "https://www.linkedin.com/in/alexanderwangy/"
-    },
-    {
-      name: "Kali Schuchhardt",
-      role: "Frontend Developer",
-      img: "/public/kali.jpg",
-      link: "https://www.linkedin.com/in/kalischuchhardt984/",
-    },
-    {
-      name: "Anders Swenson",
-      role: "Backend Developer",
-      img: "/public/anders.jpg",
-      link: "https://www.linkedin.com/in/anders-swenson/",
-    },
-  ];
+  const [developerImages, setDeveloperImages] = useState<Record<string, string> | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadDeveloperImages = async () => {
+      try {
+        const apiURL = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${apiURL}/about`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to load team images (status ${response.status}).`);
+        }
+
+        const data = (await response.json()) as Record<string, string>;
+        if (isMounted) {
+          setDeveloperImages(data);
+        }
+      } catch (error: any) {
+        if (isMounted) {
+          setFetchError(error?.message || "Unable to fetch team images.");
+        }
+      }
+    };
+
+    loadDeveloperImages();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const developers = useMemo<Developer[]>(() => (
+    [
+      {
+        name: "Evelyn Colon",
+        role: "Project Manager",
+        img: developerImages?.Evelyn ?? "/public/evelyn.jpg",
+        link: "https://www.linkedin.com/in/evelyn-colon-0074a8279/",
+      },
+      {
+        name: "Alexander Wang",
+        role: "Full Stack Developer",
+        img: developerImages?.Alex ?? "/public/alex.jpg",
+        link: "https://www.linkedin.com/in/alexanderwangy/",
+      },
+      {
+        name: "Kali Schuchhardt",
+        role: "Frontend Developer",
+        img: developerImages?.Kali ?? "/public/kali.jpg",
+        link: "https://www.linkedin.com/in/kalischuchhardt984/",
+      },
+      {
+        name: "Anders Swenson",
+        role: "Backend Developer",
+        img: developerImages?.Anders ?? "/public/anders.jpg",
+        link: "https://www.linkedin.com/in/anders-swenson/",
+      },
+    ]
+  ), [developerImages]);
 
   return (
     <div
@@ -82,6 +121,9 @@ export default function About() {
           </CardBody>
 
           <CardFooter className="flex flex-col items-center gap-2 mt-6">
+            {fetchError && (
+              <p className="text-xs text-red-500">{fetchError}</p>
+            )}
             <p className="text-gray-600 text-sm">
               © {new Date().getFullYear()} SYLA. All rights reserved.
             </p>
