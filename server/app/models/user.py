@@ -13,6 +13,9 @@ from .base import Base
 from app.core.config import settings
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
+    """
+    Our database SQLAlchemy model for a user.
+    """
     __tablename__ = "user"
     first_name: Mapped[str] = mapped_column(String, nullable=True)
     last_name: Mapped[str] = mapped_column(String, nullable=True)
@@ -32,15 +35,20 @@ async def get_user_db(
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
+    """
+    Custom class that manages user authentication actions such as registration, login, and verification.
+    """
     reset_password_token_secret = settings.auth_secret
     verification_token_secret = settings.auth_secret
 
     async def on_after_register(self, user, request = None):
+        """Requests user verification after registration."""
         print(f"User {user.id} has registered.")
         await self.request_verify(user, request)
 
 
     async def on_after_request_verify(self, user, token, _ = None):
+        """Performs email verification with Resend."""
         print(f"Verification requested for user {user.id} with token {token}")
         verification_url = f"{settings.base_url}/auth/verify-email?token={token}"
         print(f"Verification URL: {verification_url}")
@@ -54,13 +62,19 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         print(email)
 
     async def on_after_verify(self, user, request = None):
+        """Logs when a user has been verified."""
         print(f"User {user.id} has been verified.")
 
     async def authenticate(self, credentials) -> User | None:
+        """
+        Authenticates a user. If the user is banned, raises a 403 Forbidden error and 
+        does not allow login.
+        """
         user = await super().authenticate(credentials)
         if user and getattr(user, "is_banned", False):
             raise HTTPException(status_code=403, detail="This account has been banned.")
         return user
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
+    """Retrieves the user manager."""
     yield UserManager(user_db)

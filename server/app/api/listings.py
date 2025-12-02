@@ -41,6 +41,10 @@ async def get_listings(
     max_price: Optional[int] = Query(None, ge=0),
     keyword: Optional[str] = Query(None, description="Keyword to search in title or description")
 ):
+    """
+    This function contains the core logic for retrieving listings.
+    It is called by the standard and admin get_listings endpoints.
+    """
     sort_fields = {
         "id": Listing.title,
         "price": Listing.price_cents,
@@ -51,15 +55,19 @@ async def get_listings(
     sort_column = sort_fields.get(sort_by, Listing.updated_at)
     sort_order = order.lower()
 
+    # Raise exceptions if sort fields are invalid
     if sort_by and sort_by not in sort_fields:
         raise HTTPException(status_code=400, detail=f"Invalid sort_by value '{sort_by}'. Must be 'price', 'created_at', or 'updated_at'.")
 
+    # Raise exceptions if sort order is invalid
     if sort_order not in SortEnum:
         raise HTTPException(status_code=400, detail="Invalid order value. Must be 'asc' or 'desc'.")
     
+    # Retrieve the listings from the database
     async with async_session as session:
         statement = select(Listing).options(selectinload(Listing.seller))
 
+        # Filter by status
         if status:
             try:
                 status_enum = ListingStatus[status.upper()]
@@ -67,6 +75,7 @@ async def get_listings(
                 raise HTTPException(status_code=400, detail=f"Invalid status value '{status}'.")
             statement = statement.where(Listing.status == status_enum)
 
+        # Filter by category
         if category:
             try:
                 category_enum = ListingCategory[category.upper()]
@@ -74,6 +83,7 @@ async def get_listings(
                 raise HTTPException(status_code=400, detail=f"Invalid category value '{category}'.")
             statement = statement.where(Listing.category == category_enum)
 
+        # Filter by condition
         if condition:
             try:
                 condition_enum = ListingCondition[condition.upper()]
@@ -81,12 +91,14 @@ async def get_listings(
                 raise HTTPException(status_code=400, detail=f"Invalid condition value '{condition}'.")
             statement = statement.where(Listing.condition == condition_enum)
 
+        # Filter by price range
         if min_price is not None:
             statement = statement.where(Listing.price_cents >= min_price)
 
         if max_price is not None:
             statement = statement.where(Listing.price_cents <= max_price)
 
+        # Filter using search keywords in title and description
         if keyword:
             search_filter = f"%{keyword}%"
             # Source: https://stackoverflow.com/questions/20363836/postgresql-ilike-query-with-sqlalchemy
@@ -160,6 +172,8 @@ async def get_listings_standard(
     The below return statement was autocompleted by Copilot to assist with 
     calling the get_listings core function from the respective endpoints. It is a pretty self-explanatory return statement, 
     but using Copilot made it go faster.
+
+    The purpose of this route is to retrieve listings for standard members.
     """
     return await get_listings(
         pagination=pagination,
@@ -187,6 +201,9 @@ async def create_listing(
     async_session: AsyncSession = Depends(get_async_session),
     user = Depends(fastapi_users.current_user())
 ):
+    """
+    This route saves a new listing to the database.
+    """
     if image:
         save_upload_file(image)
     # Create a new Listing object and add it to the database

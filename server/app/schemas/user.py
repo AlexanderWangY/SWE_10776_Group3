@@ -2,18 +2,16 @@ import uuid
 
 from fastapi_users import schemas
 from pydantic import field_validator, ConfigDict, BaseModel, computed_field
-from app.models.listing import ListingStatus
-from datetime import datetime
 from app.core.config import settings
-from app.models.user import User
-from enum import Enum
 
 
+# Required for auth.py
 class UserRead(schemas.BaseUser[uuid.UUID]):
     pass
 
 
 class UserCreate(schemas.BaseUserCreate):
+    """Pydantic model for creating a new user account, validates ufl.edu email."""
     first_name: str | None = None
     last_name: str | None = None
     phone_number: str | None = None
@@ -25,11 +23,6 @@ class UserCreate(schemas.BaseUserCreate):
         return v
 
     pass
-
-
-class UserUpdate(schemas.BaseUserUpdate):
-    pass
-
 
 class CustomUserUpdate(BaseModel):
     first_name: str | None = None

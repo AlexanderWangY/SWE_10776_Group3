@@ -4,8 +4,10 @@ from pydantic import (
 )
 import resend
 
-
 class Settings(BaseSettings):
+    """
+    This class is used to manage our environment variables.
+    """
     model_config = SettingsConfigDict(case_sensitive=False)
 
     auth_secret: str = "CHANGE_ME_TO_A_RANDOM_SECRET"

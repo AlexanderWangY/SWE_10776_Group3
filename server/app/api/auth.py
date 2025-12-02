@@ -9,6 +9,8 @@ from app.core.config import settings
 from urllib.parse import quote
 from pydantic import BaseModel
 
+# Set up auth routers
+
 router = APIRouter()
 
 router.include_router(
@@ -30,6 +32,9 @@ router.include_router(
 )
 
 class VerifyEmailBody(BaseModel):
+      """
+      Pydantic Model for the email verification request body (token)
+      """
       token: str
 
 @router.get("/auth/verify-email",tags=["auth"])

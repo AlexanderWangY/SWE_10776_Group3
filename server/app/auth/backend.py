@@ -7,6 +7,8 @@ from app.core.config import settings
 from app.models.access_token import get_database_strategy
 from app.models.user import User, get_user_manager
 
+# This file sets up cookie-based authentication for FastAPI Users.
+
 cookie_transport = CookieTransport(
     cookie_name="snickerdoodle",
     cookie_domain=settings.cookie_domain,
