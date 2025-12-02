@@ -7,6 +7,7 @@ import ListingCard from "~/components/ListingCard";
 import { z } from "zod";
 import api from "~/api";
 
+{/* ZOD SCHEMA FOR LISTING */}
 export const listingSchema = z
   .object({
     id: z.number(),
@@ -24,7 +25,7 @@ export const listingSchema = z
 const listingsResponseSchema = z.array(listingSchema);
 type ListingResponse = z.infer<typeof listingsResponseSchema>
 
-
+{/* STATUS STYLES FOR LISTING CARDS */}
 const statusClasses: Record<z.infer<typeof listingSchema>["status"], string> = {
   active: "bg-green-200 text-green-800",
   draft: "bg-gray-200 text-gray-800",
@@ -33,6 +34,7 @@ const statusClasses: Record<z.infer<typeof listingSchema>["status"], string> = {
   archived: "bg-gray-400 text-white",
 };
 
+{/* PHONE NUMBER FORMATTING FUNCTION */}
 const formatPhoneNumber = (value: string): string => {
   const cleaned = value.replace(/\D/g, "");
   const digits = cleaned.slice(0, 10);
@@ -42,6 +44,7 @@ const formatPhoneNumber = (value: string): string => {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 };
 
+{/* PROFILE COMPONENT */}
 export default function Profile({}: Route.ComponentProps) {
   const { user } = useUser();
 
@@ -51,6 +54,7 @@ export default function Profile({}: Route.ComponentProps) {
   const hasName = user.first_name || user.last_name;
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
 
+  {/* FETCH LISTINGS */}
   const fetchListings = async () => {
     try {
       const res = await api.get("/profile/listings");
@@ -67,13 +71,16 @@ export default function Profile({}: Route.ComponentProps) {
     }
   };
 
+  {/* FETCH LISTINGS EFFECT */}
   useEffect(() => {
     fetchListings();
   }, []);
 
+  {/* RENDER PROFILE PAGE */}
   return (
     <main className="min-h-screen w-full">
       <div className="max-w-4xl mx-auto pt-16 flex flex-col gap-4 px-6">
+        {/* USER AVATAR AND ADMIN BADGE */}
         <div className="relative">
           {user.is_superuser && (
             <Badge color="primary" content="ADMIN" placement="bottom-right">
@@ -92,6 +99,7 @@ export default function Profile({}: Route.ComponentProps) {
             />
           )}
         </div>
+        {/* USER NAME AND CONTACT INFO */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-semibold">

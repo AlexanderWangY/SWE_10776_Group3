@@ -1,17 +1,19 @@
 import { Card, CardBody, CardFooter, Image } from "@heroui/react";
-import type { Listing } from "./listcard";
 import { useNavigate } from "react-router";
+import type { Listing } from "./listcard";
 
 type ListingCardProps = Pick<
   Listing,
   "id" | "image_url" | "price_cents" | "title"
 > & { className?: string };
 
+{/*LIGHTWEIGHT LISTING TEASER CARD FOR GRID DISPLAYS.*/}
 export default function ListingCard({ id, image_url, price_cents, title, className }: ListingCardProps) {
   const navigate = useNavigate();
   const priceDollars = (price_cents / 100).toFixed(2);
 
   return (
+    // CARD IS PRESSABLE AND ROUTES TO THE LISTING DETAILS PAGE. //
     <Card
       isPressable
       disableAnimation

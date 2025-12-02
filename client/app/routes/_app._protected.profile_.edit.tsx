@@ -11,6 +11,7 @@ import {
   import { useNavigate } from "react-router";
 import { useUser } from "./_app._protected";
   
+  {/* ZOD SCHEMA FOR USER PROFILE EDITING */}
   const userEditSchema = z.object({
     firstName: z.preprocess(
       (val) => (val === "" ? null : val),
@@ -31,6 +32,7 @@ import { useUser } from "./_app._protected";
     ),
   });
   
+  {/* PROFILE EDIT COMPONENT */}
   export default function ProfileEdit() {
     const navigate = useNavigate();
     const { user } = useUser();
@@ -38,6 +40,7 @@ import { useUser } from "./_app._protected";
       {}
     );
   
+    {/* FORM SUBMISSION HANDLER */}
     const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
   
@@ -52,14 +55,14 @@ import { useUser } from "./_app._protected";
   
       console.log("Validated data:", validation.data);
   
-      // Expected body for API
+      {/* EXPECTED BODY FOR API */}
       const body = {
         first_name: validation.data.firstName,
         last_name: validation.data.lastName,
         phone_number: validation.data.phoneNumber,
       };
   
-      // Make API call to update user profile here
+      {/* MAKE API CALL TO UPDATE USER PROFILE HERE  */}
       try {
         await api.put("/profile", body);
       } catch (error) {
@@ -72,6 +75,7 @@ import { useUser } from "./_app._protected";
       console.log("Form submitted with data:", data);
     };
   
+    {/* FORM RENDERING */}
     return (
       <main className="min-h-screen w-full">
         <div className="max-w-2xl mx-auto pt-12 flex flex-col gap-4 px-6">

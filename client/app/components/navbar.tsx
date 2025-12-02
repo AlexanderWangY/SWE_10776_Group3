@@ -1,22 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
+  Avatar,
+  Badge,
   Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Link,
   Navbar,
   NavbarBrand,
   NavbarContent,
   NavbarItem,
-  Link,
-  DropdownTrigger,
-  Dropdown,
-  Avatar,
-  DropdownMenu,
-  DropdownItem,
-  NavbarMenuToggle,
   NavbarMenu,
   NavbarMenuItem,
-  Badge,
+  NavbarMenuToggle,
 } from "@heroui/react";
-import OurLogo from "../components/logo";
 import { useLocation, useNavigate } from "react-router";
 import { auth, type User } from "~/libs/auth";
 
@@ -26,51 +25,49 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  {
-    label: "Home",
-    href: "/",
-  },
-  {
-    label: "About Us",
-    href: "/about",
-  },
-  {
-    label: "Listings",
-    href: "/listings",
-  },
+  { label: "Home", href: "/" },
+  { label: "About Us", href: "/about" },
+  { label: "Listings", href: "/listings" },
 ];
 
 interface Props {
   user: User | null;
 }
 
+  {/* RENDERS RESPONSIVE NAVIGATION WITH AUTHENTICATED AND ANONYMOUS STATES. */}
 export default function AppNavbar({ user }: Props) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const [isMenuOpen, _] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  {/* HANDLES USER LOGOUT AND REDIRECTS TO THE LOGIN PAGE.*/}
   const handleLogout = async () => {
     await auth.logout();
     navigate("/login");
-  }
+  };
 
   return (
-    <Navbar className="border-b-1 border-neutral-200" maxWidth="xl" shouldHideOnScroll={false} position="static">
-      {/* LEFT */}
+    <Navbar
+      className="border-b-1 border-neutral-200"
+      maxWidth="xl"
+      shouldHideOnScroll={false}
+      position="static"
+      onMenuOpenChange={setIsMenuOpen}
+    >
+      {/* LEFT SECTION */}
       <NavbarContent justify="start">
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="md:hidden"
         />
         <NavbarBrand className="flex items-left">
-        <Link href="/" className="cursor-pointer">
-          <span className="text-xl font-bold text-blue-600">
-            GatorMarket
-          </span>
-        </Link>
-      </NavbarBrand>
+          <Link href="/" className="cursor-pointer">
+            <span className="text-xl font-bold text-blue-600">GatorMarket</span>
+          </Link>
+        </NavbarBrand>
       </NavbarContent>
 
+      {/* CENTER SECTION */}
       <NavbarContent
         className="hidden md:flex gap-8 text-lg font-medium"
         justify="center"
@@ -88,6 +85,7 @@ export default function AppNavbar({ user }: Props) {
         ))}
       </NavbarContent>
 
+      {/* MOBILE MENU */}
       <NavbarMenu>
         {menuItems.map((item, index) => (
           <NavbarMenuItem key={`${item.label}-${index}`}>
@@ -103,18 +101,18 @@ export default function AppNavbar({ user }: Props) {
         ))}
       </NavbarMenu>
 
-      {/* RIGHT */}
+      {/* RIGHT SECTION */}
       <NavbarContent justify="end">
         {user ? (
           <Dropdown placement="bottom-end">
             {user.is_superuser ? (
-              <Badge 
-                color="primary" 
-                content="ADMIN" 
-                size="sm" 
-                placement="bottom-right" 
+              <Badge
+                color="primary"
+                content="ADMIN"
+                size="sm"
+                placement="bottom-right"
                 classNames={{
-                  badge: "text-[8px] px-0.5 h-3.5 min-w-[32px] translate-y-2.5"
+                  badge: "text-[8px] px-0.5 h-3.5 min-w-[32px] translate-y-2.5",
                 }}
               >
                 <DropdownTrigger>
@@ -123,9 +121,7 @@ export default function AppNavbar({ user }: Props) {
                     className="transition-transform cursor-pointer"
                     color="primary"
                     disableAnimation
-                    name={
-                      `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
-                    }
+                    name={`${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()}
                     size="sm"
                     src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
                   />
@@ -138,9 +134,7 @@ export default function AppNavbar({ user }: Props) {
                   className="transition-transform cursor-pointer"
                   color="primary"
                   disableAnimation
-                  name={
-                    `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
-                  }
+                  name={`${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()}
                   size="sm"
                   src={user.profile_picture_url || "/GatorAvatarTemporary.png"}
                 />
@@ -152,13 +146,24 @@ export default function AppNavbar({ user }: Props) {
                 <p className="font-semibold">{user.email}</p>
               </DropdownItem>
               {user.is_superuser ? (
-                <DropdownItem key="admin" href="/admin">Admin Dashboard</DropdownItem>
+                <DropdownItem key="admin" href="/admin">
+                  Admin Dashboard
+                </DropdownItem>
               ) : null}
-              <DropdownItem key="settings" href="/profile">My Profile</DropdownItem>
-              <DropdownItem key="new-listings" href="/listings/new">Create a Listing</DropdownItem>
-              {!user.is_superuser ?(
-                <DropdownItem key="report-user" href="https://docs.google.com/forms/d/e/1FAIpQLSfOMKpBLSYqOFEiFsC8QhY4kMuPH64YhwwSQZotHlOYwwyidQ/viewform?usp=header">Report A User</DropdownItem>
-              ): null}
+              <DropdownItem key="settings" href="/profile">
+                My Profile
+              </DropdownItem>
+              <DropdownItem key="new-listings" href="/listings/new">
+                Create a Listing
+              </DropdownItem>
+              {!user.is_superuser ? (
+                <DropdownItem
+                  key="report-user"
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSfOMKpBLSYqOFEiFsC8QhY4kMuPH64YhwwSQZotHlOYwwyidQ/viewform?usp=header"
+                >
+                  Report A User
+                </DropdownItem>
+              ) : null}
               <DropdownItem key="logout" color="danger" onClick={handleLogout}>
                 Log Out
               </DropdownItem>

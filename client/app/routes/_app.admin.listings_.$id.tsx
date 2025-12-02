@@ -4,6 +4,7 @@ import { redirect, useNavigate } from "react-router";
 import { userContext } from "~/context";
 import { useState } from "react";
 
+{/* ADMIN LISTING INTERFACE */}
 interface AdminListing {
   id: number;
   title: string;
@@ -23,23 +24,28 @@ interface AdminListing {
   } | null;
 }
 
-// LOADER 
+{/* LOADER */}
 export async function loader({ params, context }: Route.LoaderArgs) {
   const user = context.get(userContext);
 
+  {/* AUTHENTICATION CHECK */}
   if (!user) throw redirect("/login");
+  {/* ADMIN CHECK */}
   if (!user.is_superuser) throw redirect("/");
 
+  {/* LISTING ID VALIDATION */}
   const listingId = Number(params.id);
   if (!Number.isFinite(listingId)) {
     return { listing: null, user };
   }
 
+  {/* PAGINATED FETCH TO FIND LISTING */}
   const apiURL = import.meta.env.VITE_API_URL;
   const perPage = 100;
   let page = 1;
   let listing: AdminListing | null = null;
 
+  {/* FETCH LISTINGS WITH PAGINATION */}
   try {
     while (page <= 500) {
       const res = await fetch(
@@ -49,37 +55,44 @@ export async function loader({ params, context }: Route.LoaderArgs) {
         }
       );
 
+      {/* CHECK RESPONSE STATUS */}
       if (!res.ok) {
         const detail = await res.json().catch(() => null);
         throw new Error(detail?.detail ?? "Failed to fetch listing");
       }
 
+      {/* PARSE RESPONSE DATA */}
       const data = (await res.json()) as AdminListing[];
       if (!Array.isArray(data) || data.length === 0) {
         break;
       }
 
+      {/* FIND LISTING IN CURRENT PAGE */}
       const found = data.find((item) => Number(item?.id) === listingId);
       if (found) {
         listing = found;
         break;
       }
 
+      {/* CHECK IF LAST PAGE */}
       if (data.length < perPage) {
         break;
       }
 
+      {/* INCREMENT PAGE NUMBER */}
       page += 1;
     }
   } catch (_err) {
     listing = null;
   }
 
+  {/* FETCH DETAILED LISTING INFO IF FOUND */}
   try {
     const detailRes = await fetch(`${apiURL}/listings/${listingId}`, {
       credentials: "include",
     });
 
+    {/* CHECK RESPONSE STATUS */}
     if (detailRes.ok) {
       const detail = (await detailRes.json()) as AdminListing;
       listing = listing ? { ...listing, ...detail } : detail;
@@ -87,6 +100,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
   } catch (_err) {
   }
 
+  {/* ASSIGN LISTING ID */}
   if (listing) {
     listing.id = listingId;
   }
@@ -94,7 +108,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
   return { listing, user };
 }
 
-// FORMATS PHONE NUMBER PRETTY
+{/* FORMATS PHONE NUMBER PRETTY */}
 function formatPhoneNumber(phone?: string | null) {
   if (!phone) return "No phone provided";
   const digits = phone.replace(/\D/g, "");
@@ -102,7 +116,7 @@ function formatPhoneNumber(phone?: string | null) {
   return `(${digits.slice(0, 3)})-${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-// ASSIGNS STATUSES TO COLORS FOR THE STATUS BADGE
+{/* ASSIGNS STATUSES TO COLORS FOR THE STATUS BADGE */}
 function getStatusColor(status?: string | null) {
   switch ((status ?? "").toLowerCase()) {
     case "active":
@@ -116,7 +130,7 @@ function getStatusColor(status?: string | null) {
   }
 }
 
-// ASSIGNS CATEGORY COLORS
+{/* ASSIGNS CATEGORY COLORS */}
 function getCategoryColor(category?: string | null) {
   switch ((category ?? "").toLowerCase()) {
     default:
@@ -124,7 +138,7 @@ function getCategoryColor(category?: string | null) {
   }
 }
 
-// ASSIGNS CONDITION COLORS
+{/* ASSIGNS CONDITION COLORS */}
 function getConditionColor(condition?: string | null) {
   switch ((condition ?? "").toLowerCase()) {
     case "new":
@@ -142,11 +156,12 @@ function getConditionColor(condition?: string | null) {
   }
 }
 
-// FORMAT CATEGORY/CONDITION TEXT
+{/* FORMAT CATEGORY/CONDITION TEXT */}
 function formatLabel(text: string) {
   return text.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+{/* ADMIN LISTING DETAILS COMPONENT */}
 export default function AdminListingDetails({ loaderData }: Route.ComponentProps) {
   const { listing } = loaderData as { listing: AdminListing | null };
   const navigate = useNavigate();
@@ -161,6 +176,7 @@ export default function AdminListingDetails({ loaderData }: Route.ComponentProps
     .trim();
   const sellerPhone = formatPhoneNumber(listing.seller?.phone_number);
 
+  {/* HANDLE DELETE LISTING */}
   const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete listing: ${listing.title}?`)) {
       return;
@@ -169,6 +185,7 @@ export default function AdminListingDetails({ loaderData }: Route.ComponentProps
     setDeleting(true);
     setError(null);
 
+    {/* DELETE LISTING API CALL */}
     try {
       const apiURL = import.meta.env.VITE_API_URL;
       const res = await fetch(`${apiURL}/listings/${listing.id}`, {
@@ -176,6 +193,7 @@ export default function AdminListingDetails({ loaderData }: Route.ComponentProps
         credentials: 'include',
       });
 
+      {/* CHECK RESPONSE STATUS */}
       if (!res.ok) {
         const msg = await res.json().catch(() => ({}));
         throw new Error(msg.detail || 'Failed to delete listing');
@@ -189,6 +207,7 @@ export default function AdminListingDetails({ loaderData }: Route.ComponentProps
     }
   };
 
+  {/* RENDER COMPONENT */}
   return (
       <main className="max-w-7xl mx-auto pt-8 md:pt-12 px-4">
         {/* BREADCRUMBS */}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Route } from "./+types/_app.admin.users";
 import { userContext } from "~/context";
 
+{/* LOADER */}
 interface User {
   id: number;
   email: string;
@@ -14,16 +15,20 @@ interface User {
   phone_number: string | null;
 }
 
+{/* SORTING TYPES */}
 type SortField = 'first_name' | 'last_name' | 'phone_number' | 'email';
 type SortOrder = 'asc' | 'desc';
 
+{/* LOADER FUNCTION */}
 export async function loader({ context, request }: Route.LoaderArgs) {
   const user = context.get(userContext);
 
+  {/* AUTHENTICATION CHECK */}
   if (!user) {
     throw redirect(`/login?redirectTo=${request.url}`);
   }
 
+  {/* ADMIN CHECK */}
   if (!user.is_superuser) {
     throw redirect("/");
   }
@@ -31,6 +36,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   return null;
 }
 
+{/* ADMIN USERS PAGE COMPONENT */}
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +44,7 @@ export default function AdminUsersPage() {
   const [sortBy, setSortBy] = useState<SortField>('first_name');
   const [order, setOrder] = useState<SortOrder>('asc');
 
+  {/* FETCH USERS EFFECT */}
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -62,6 +69,7 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, [sortBy, order]);
 
+  {/* FORMATS PHONE NUMBER PRETTY */}
   const formatPhone = (phone: string | null) => {
     if (!phone) return "No phone";
     const digits = phone.replace(/\D/g, "");
@@ -71,8 +79,10 @@ export default function AdminUsersPage() {
     return phone;
   };
 
+  {/* RENDER */}
   return (
     <main className="max-w-7xl mx-auto pt-8 px-4 pb-10">
+      {/* BREADCRUMBS */}
       <Breadcrumbs className="mb-4">
         <BreadcrumbItem href="/admin">Admin Dashboard</BreadcrumbItem>
         <BreadcrumbItem>User Management</BreadcrumbItem>
@@ -126,6 +136,7 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
+      {/* USERS TABLE */}
       <Card className="p-4">
         <CardHeader className="flex justify-between items-center p-4">
           <h2 className="text-xl font-semibold">All Users</h2>

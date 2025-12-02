@@ -5,9 +5,11 @@ import type { Route } from "./+types/_app._protected";
 
 type ContextType = { user: User };
 
+{/* LOADER */}
 export async function loader({ context, request }: Route.LoaderArgs) {
   const user = context.get(userContext);
 
+  {/* AUTHENTICATION CHECK */}
   if (!user) {
     return redirect(`/login?redirectTo=${request.url}`);
   }
@@ -17,12 +19,14 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   };
 }
 
+{/* PROTECTED LAYOUT COMPONENT */}
 export default function ProtectedLayout({ loaderData }: Route.ComponentProps) {
   const { user } = loaderData;
 
   return <Outlet context={{ user } satisfies ContextType} />;
 }
 
+{/* CUSTOM HOOK TO ACCESS USER CONTEXT */}
 export function useUser() {
   return useOutletContext<ContextType>();
 }

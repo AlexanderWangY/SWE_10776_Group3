@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Card, CardBody, Button } from "@heroui/react";
+import { useEffect, useState } from "react";
+import { Button, Card, CardBody } from "@heroui/react";
 
 type NotificationProps = {
   message: string;
@@ -8,6 +8,7 @@ type NotificationProps = {
   duration?: number; 
 };
 
+{/* RENDERS DISMISSIBLE INLINE NOTIFICATIONS WITH OPTIONAL AUTO-CLOSE. */}
 export default function Notification({ message, type = "info", duration = 60000 }: NotificationProps) {
   const [visible, setVisible] = useState(true);
 
@@ -27,20 +28,19 @@ export default function Notification({ message, type = "info", duration = 60000 
   };
 
   return (
-  <Card
-  className={`max-w-sm w-full border ${typeClasses[type]} shadow-md rounded-xl transition-all duration-500 fixed z-50`}
-  style={{ top: "2rem", right: "2rem" }}
->
-  <CardBody className="p-4 text-center font-medium">{message}</CardBody>
-  <Button
-    onClick={() => setVisible(false)}
-    className="absolute -top-0 -right-4 text-xs p-3"
-    size="sm"
-    color="transparent"
-  >
-    ✕
-  </Button>
-</Card>
-);
-
+    <Card
+      className={`max-w-sm w-full border ${typeClasses[type]} shadow-md rounded-xl transition-all duration-500 fixed z-50`}
+      style={{ top: "2rem", right: "2rem" }}
+    >
+      <CardBody className="p-4 text-center font-medium">{message}</CardBody>
+      <Button
+        onClick={() => setVisible(false)}
+        className="absolute -top-0 -right-4 text-xs p-3"
+        size="sm"
+        color="transparent"
+      >
+        ✕
+      </Button>
+    </Card>
+  );
 }

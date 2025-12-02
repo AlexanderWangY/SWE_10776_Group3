@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 import XButton from "~/components/xbutton";
 
+{/* PRIVACY POLICY PAGE COMPONENT */}
 export default function Privacy() {
   const [isVisible, setIsVisible] = useState(false);
 
+  {/* HANDLES VISIBILITY TRANSITION */}
   useEffect(() => {
     const timeout = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timeout);
   }, []);
 
+  {/* RENDER PRIVACY POLICY PAGE */}
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-orange-500 to-blue-500 p-6">
       <div className="flex justify-end">
+        {/* CLOSE BUTTON */}
         <XButton />
       </div>
       <div
@@ -19,7 +23,7 @@ export default function Privacy() {
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
         }`}
       >
-
+        {/* PRIVACY POLICY CONTENT */}
         <header>
           <h1 className="text-4xl font-bold mb-2 text-center text-blue-950">
             Privacy Policy
@@ -94,6 +98,7 @@ export default function Privacy() {
           </p>
         </section>
 
+        {/* FOOTER */}
         <footer className="pt-8 text-sm text-gray-500 text-center">
           © {new Date().getFullYear()} GatorMarket. All rights reserved.
         </footer>

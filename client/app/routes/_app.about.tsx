@@ -3,6 +3,7 @@ import { Card, CardHeader, CardBody, CardFooter, Breadcrumbs, BreadcrumbItem } f
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 
+{/* ABOUT PAGE WITH DEVELOPER PROFILES AND LINKS. */}
 interface Developer {
   name: string;
   role: string;
@@ -13,11 +14,13 @@ interface Developer {
 export default function About() {
   const [isVisible, setIsVisible] = useState(false);
 
+  {/* VISIBILITY EFFECT FOR FADE-IN ANIMATION */}
   useEffect(() => {
     const timeout = setTimeout(() => setIsVisible(true), 50);
     return () => clearTimeout(timeout);
   }, []);
 
+  {/* IF WE WANT WE CAN ADD A BLURB ABT US BUT EHH WE REALLY DONT NEED IT */}
   const [developerImages, setDeveloperImages] = useState<Record<string, string> | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -78,12 +81,14 @@ export default function About() {
     ]
   ), [developerImages]);
 
+  {/* RENDER ABOUT PAGE */}
   return (
     <div
       className={`min-h-screen w-full flex flex-col transition-opacity duration-1000 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
+      {/* MAIN CONTENT */}
       <main className="flex flex-col items-center w-full px-5 flex-grow py-10 gap-6">
         <Breadcrumbs className="w-full max-w-4xl text-sm text-default-400">
           <BreadcrumbItem href="/">Home</BreadcrumbItem>
@@ -102,6 +107,7 @@ export default function About() {
             </p>
           </CardHeader>
 
+          {/* DEVELOPER PROFILES */}
           <CardBody className="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-0">
             {developers.map((dev, index) => (
               <Link to={dev.link} target="_blank" rel="noopener noreferrer" key={index}>
@@ -119,7 +125,7 @@ export default function About() {
               </Link>
             ))}
           </CardBody>
-
+          {/* FOOTER */}
           <CardFooter className="flex flex-col items-center gap-2 mt-6">
             {fetchError && (
               <p className="text-xs text-red-500">{fetchError}</p>
