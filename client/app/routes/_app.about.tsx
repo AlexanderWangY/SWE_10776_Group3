@@ -21,32 +21,6 @@ export default function About() {
   }, []);
 
   {/* IF WE WANT WE CAN ADD A BLURB ABT US BUT EHH WE REALLY DONT NEED IT */}
-  const developers = [
-    {
-      name: "Evelyn Colon",
-      role: "Project Manager",
-      img: "/public/evelyn.jpg",
-      link: "https://www.linkedin.com/in/evelyn-colon-0074a8279/",
-    },
-    {
-      name: "Alexander Wang",
-      role: "Frontend Developer",
-      img: "/public/alex.jpg",
-      link: "https://www.linkedin.com/in/alexanderwangy/"
-    },
-    {
-      name: "Kali Schuchhardt",
-      role: "Frontend Developer",
-      img: "/public/kali.jpg",
-      link: "https://www.linkedin.com/in/kalischuchhardt984/",
-    },
-    {
-      name: "Anders Swenson",
-      role: "Backend Developer",
-      img: "/public/anders.jpg",
-      link: "https://www.linkedin.com/in/anders-swenson/",
-    },
-  ];
   const [developerImages, setDeveloperImages] = useState<Record<string, string> | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
