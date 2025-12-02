@@ -14,6 +14,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 type AdminUserResult = Promise<AdminUser>;
 
+{/* BUILDS FETCH OPTIONS WITH AUTHENTICATED COOKIES AND JSON HEADERS. */}
 const buildOptions = (init?: RequestInit): RequestInit => ({
   credentials: "include",
   headers: {
@@ -23,6 +24,7 @@ const buildOptions = (init?: RequestInit): RequestInit => ({
   ...init,
 });
 
+{/* NORMALIZES API RESPONSES, RAISING ERRORS WHEN REQUESTS FAIL. */}
 const handleResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`;
@@ -43,18 +45,21 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
   return (await response.json()) as T;
 };
 
+{/* RETRIEVES DETAILED INFORMATION FOR A SPECIFIC USER.*/}
 export const fetchAdminUser = async (userId: string): AdminUserResult => {
   return handleResponse<AdminUser>(
     await fetch(`${API_URL}/admin/users/${userId}`, buildOptions())
   );
 };
 
+{/* FLAGS A USER AS BANNED AND RETURNS UPDATED ACCOUNT DATA. */}
 export const banAdminUser = async (userId: string): AdminUserResult => {
   return handleResponse<AdminUser>(
     await fetch(`${API_URL}/admin/users/${userId}/ban`, buildOptions({ method: "POST" })),
   );
 };
 
+{/* REVERSES A BAN STATUS FOR THE GIVEN USER. */}
 export const unbanAdminUser = async (userId: string): AdminUserResult => {
   return handleResponse<AdminUser>(
     await fetch(`${API_URL}/admin/users/${userId}/unban`, buildOptions({ method: "POST" }))

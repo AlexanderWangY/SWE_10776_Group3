@@ -7,11 +7,13 @@ import ListingCard from "~/components/ListingCard";
 import api from "~/api";
 import type { Listing } from "~/components/listcard";
 
+{/* ROOT PAGE WITH HERO SECTION AND LISTINGS CAROUSEL. */}
 export default function Root() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  {/* FETCH LISTINGS */}
   useEffect(() => {
     async function fetchListings() {
       try {
@@ -27,6 +29,7 @@ export default function Root() {
     fetchListings();
   }, []);
 
+  {/* CAROUSEL EFFECT */}
   useEffect(() => {
     if (listings.length === 0) return;
 
@@ -37,7 +40,7 @@ export default function Root() {
     return () => clearInterval(interval);
   }, [listings]);
 
-
+  {/* HERO SECTION */}
   const Hero = (
     <div className="flex-1 flex flex-col gap-4 text-center md:text-left">
       <h1 className="text-4xl sm:text-5xl font-semibold">
@@ -63,6 +66,7 @@ export default function Root() {
     </div>
   );
 
+  {/* SKELETON CARD */}
   const SkeletonCard = (
     <div className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[500px] animate-pulse">
       <div className="w-full aspect-square bg-gray-200 mb-1" />
@@ -71,6 +75,7 @@ export default function Root() {
     </div>
   );
 
+  {/* PLACEHOLDER FOR NO LISTINGS */}
   const Placeholder = (
     <div className="w-full max-w-[400px] sm:max-w-[450px] md:max-w-[500px]">
       {/* WE COULD PUT A RANDOM IMAGE HERE TO MAKE IT MORE APPEALING IDK */}
@@ -78,7 +83,7 @@ export default function Root() {
     </div>
   );
 
-  // LOADING THE LISTINGS
+  {/* LOADING THE LISTINGS */}
   if (loading) {
     return (
       <main className="max-w-6xl mx-auto min-h-screen flex flex-col items-center px-4">
@@ -92,7 +97,7 @@ export default function Root() {
     );
   }
 
-  // WHEN THERE ARE NO LISTINGS
+  {/* WHEN THERE ARE NO LISTINGS */}
   if (!loading && listings.length === 0) {
     return (
       <main className="max-w-6xl mx-auto min-h-screen flex flex-col items-center px-4">
@@ -106,7 +111,7 @@ export default function Root() {
     );
   }
 
-  // CAROSEL OF LISTINGS
+  {/* CAROUSEL OF LISTINGS */}
   const currentListing = listings[currentIndex];
 
   return (

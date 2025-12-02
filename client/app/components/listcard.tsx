@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 
 export type ListingStatus = "draft" | "active" | "sold" | "inactive" | "archived";
 export type ListingCategory = "electronics" | "school supplies" | "furniture" | "appliances" | "clothing" | "textbooks" | "miscellaneous";
@@ -19,7 +19,7 @@ export interface Listing {
   status: ListingStatus;
   created_at: string;
   updated_at: string;
-  image_url?: string; // IMAGE IS OPTIONAL IN BACKEND
+  image_url?: string; // IMAGE IS OPTIONAL IN BACKEND //
   seller: Seller;
   category?: ListingCategory | null;
   condition?: ListingCondition | null;
@@ -30,15 +30,17 @@ type ListingCardProps = {
   onEdit?: (listing: Listing) => void;
 };
 
-function formatPhoneNumber (phone: string | undefined): string {
+{/* NORMALIZES RAW PHONE INPUT INTO (XXX) XXX-XXXX OR FALLBACK TEXT.*/}
+function formatPhoneNumber(phone: string | undefined): string {
   if (!phone) return "No phone provided";
-  const digits = phone.replace(/\D/g, '');
+  const digits = phone.replace(/\D/g, "");
   if (digits.length === 10) {
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
   }
   return digits.length > 0 ? phone : "No phone provided";
 }
 
+{/*VISUAL CARD DISPLAY FOR A SINGLE LISTING WITH OPTIONAL CALL-TO-ACTION.*/}
 export default function ListingCard({ listing, onEdit }: ListingCardProps) {
   const [showDescription, setShowDescription] = useState(false);
   const priceDollars = (listing.price_cents / 100).toFixed(2);
@@ -51,7 +53,7 @@ export default function ListingCard({ listing, onEdit }: ListingCardProps) {
     archived: "bg-gray-400 text-white",
   };
 
-  // Handle null seller info
+  // HANDLE NULL SELLER INFO //
   const sellerName = listing.seller
     ? `${listing.seller.first_name ?? ""} ${listing.seller.last_name ?? ""}`.trim() || "Unknown Seller"
     : "Unknown Seller";

@@ -3,6 +3,7 @@ import type { Route } from "./+types/_app";
 import AppNavbar from "~/components/navbar";
 import { userContext } from "~/context";
 
+{/* LOADER FUNCTION */}
 export function loader({ context }: Route.LoaderArgs) {
   const user = context.get(userContext);
   return {
@@ -10,6 +11,7 @@ export function loader({ context }: Route.LoaderArgs) {
   };
 }
 
+{/* MAIN APP LAYOUT COMPONENT */}
 export default function AppLayout({ loaderData }: Route.ComponentProps) {
   const { user } = loaderData;
 

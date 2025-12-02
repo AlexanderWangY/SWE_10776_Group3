@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 import XButton from "~/components/xbutton";
 
+{/* TERMS OF SERVICE PAGE COMPONENT */}
 export default function Terms() {
   const [isVisible, setIsVisible] = useState(false);
 
+  {/* HANDLES VISIBILITY TRANSITION */}
   useEffect(() => {
     const timeout = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timeout);
   }, []);
 
+  {/* RENDER TERMS OF SERVICE PAGE */}
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-orange-500 to-blue-500 p-6">
       <div className="flex justify-end">
+        {/* CLOSE BUTTON */}
         <XButton />
       </div>
       <div
@@ -19,7 +23,7 @@ export default function Terms() {
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
         }`}
       >
-
+        {/* TERMS OF SERVICE CONTENT */}
         <header>
           <h1 className="text-4xl font-bold mb-2 text-center text-blue-950">
             Terms of Service
@@ -170,6 +174,7 @@ export default function Terms() {
           </p>
         </section>
 
+        {/* FOOTER */}
         <footer className="pt-8 text-sm text-gray-500 text-center">
           © {new Date().getFullYear()} GatorMarket. All rights reserved.
         </footer>

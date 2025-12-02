@@ -12,8 +12,6 @@ import {
   Pagination,
   Slider,
   cn,
-  Listbox,
-  ListboxItem,
 } from "@heroui/react";
 import { z } from "zod";
 import React from "react";
@@ -21,8 +19,9 @@ import React from "react";
 import ListingCard from "~/components/ListingCard";
 import type { Listing } from "~/components/listcard";
 import type { Route } from "./+types/_app.about";
-import { Checkbox, CheckboxGroup } from "@heroui/react";
+import { Checkbox} from "@heroui/react";
 
+{/* LISTBOX WRAPPER FOR CUSTOM STYLING */}
 export const ListboxWrapper = ({
   children,
 }: {
@@ -33,12 +32,14 @@ export const ListboxWrapper = ({
   </div>
 );
 
+{/* SCHEMAS FOR LISTING DATA VALIDATION */}
 const sellerSchema = z.object({
   first_name: z.string(),
   last_name: z.string(),
   phone_number: z.string(),
 });
 
+{/* SORT OPTIONS FOR LISTINGS */}
 const sortOptions = [
   { label: "Price: Low → High", query: "price&order=asc" },
   { label: "Price: High → Low", query: "price&order=desc" },
@@ -46,6 +47,7 @@ const sortOptions = [
   { label: "Oldest", query: "created_at&order=asc" },
 ];
 
+{/* SCHEMA FOR A SINGLE LISTING */}
 export const listingSchema = z.object({
   id: z.number(),
   title: z.string(),
@@ -60,6 +62,7 @@ export const listingSchema = z.object({
 
 const listingsResponseSchema = z.array(listingSchema);
 
+{/* MAIN LISTINGS PAGE COMPONENT */}
 export default function ListingsPage({}: Route.ComponentProps) {
   const [listings, setListings] = useState<Listing[]>([]);
   const [sortOption, setSortOption] = useState<string>("");
@@ -68,7 +71,7 @@ export default function ListingsPage({}: Route.ComponentProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [page, setPage] = useState<number>(1);
 
-  const cardsPerPage = 40; // WE CAN CHANGE THIS IF U WANT
+  const cardsPerPage = 40; // WE CAN CHANGE THIS IF U WANT //
   const [totalPages, setTotalPages] = useState<number>(1);
 
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -76,14 +79,17 @@ export default function ListingsPage({}: Route.ComponentProps) {
   const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
   const [debouncedPriceRange, setDebouncedPriceRange] = useState<number[]>([0, 1000]);
 
+  {/* HANDLERS FOR CATEGORY AND CONDITION FILTERS */}
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(prev => prev === category ? "" : category);
   };
 
+  {/* HANDLERS FOR CATEGORY AND CONDITION FILTERS */}
   const handleConditionChange = (condition: string) => {
     setSelectedCondition(prev => prev === condition ? "" : condition);
   };
 
+  {/* FETCHES LISTINGS FROM API */}
   const fetchListings = async (
     sortQuery?: string,
     pageNum: number = page
@@ -96,24 +102,29 @@ export default function ListingsPage({}: Route.ComponentProps) {
 
       let filterParams = "&status=active";
 
+      {/* APPLIES SORTING */}
       if (sortQuery) {
         const [sort_by, orderPart] = sortQuery.split("&");
         const order = orderPart?.split("=")[1];
         filterParams += `&sort_by=${sort_by}&order=${order}`;
       }
 
+      {/* APPLIES SEARCH AND FILTERS */}
       if (searchTerm.trim()) {
         filterParams += `&keyword=${encodeURIComponent(searchTerm.trim())}`;
       }
 
+      {/* APPLIES CATEGORY FILTER */}
       if (selectedCategory) {
         filterParams += `&category=${selectedCategory}`;
       }
 
+      {/* APPLIES CONDITION FILTER */}
       if (selectedCondition) {
         filterParams += `&condition=${selectedCondition}`;
       }
 
+      {/* APPLIES PRICE RANGE FILTER */}
       const [minPrice, maxPrice] = debouncedPriceRange;
       if (minPrice > 0) {
         filterParams += `&min_price=${minPrice * 100}`;
@@ -125,11 +136,13 @@ export default function ListingsPage({}: Route.ComponentProps) {
       const currentPageUrl = `${apiURL}/listings?page_num=${pageNum}&card_num=${cardsPerPage}${filterParams}`;
       const nextPageUrl = `${apiURL}/listings?page_num=${pageNum + 1}&card_num=${cardsPerPage}${filterParams}`;
 
+      {/* FETCHES CURRENT AND NEXT PAGE */}
       const [currentRes, nextRes] = await Promise.all([
         fetch(currentPageUrl),
         fetch(nextPageUrl)
       ]);
 
+      {/* CHECKS FOR ERRORS IN CURRENT PAGE RESPONSE */}
       if (!currentRes.ok) {
         const msg = await currentRes.json();
         throw new Error(msg.detail || `Error ${currentRes.status}`);
@@ -140,12 +153,14 @@ export default function ListingsPage({}: Route.ComponentProps) {
           nextRes.ok ? nextRes.json() : []
         ]);
 
+      {/* PARSES AND SETS LISTINGS */}
       if (Array.isArray(currentData)) {
         const parsed = listingsResponseSchema.parse(currentData);
         setListings(parsed);
 
         const hasNextPage = Array.isArray(nextData) && nextData.length > 0;
 
+        {/* HANDLES CASE WHERE CURRENT PAGE IS EMPTY BUT PREVIOUS PAGES EXIST */}
         if (!hasNextPage && parsed.length === 0 && pageNum > 1) {
           const lastAvailablePage = pageNum - 1;
           setTotalPages(Math.max(1, lastAvailablePage));
@@ -167,6 +182,7 @@ export default function ListingsPage({}: Route.ComponentProps) {
     }
   };
 
+  {/* DEBOUNCE PRICE RANGE CHANGES */}
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedPriceRange(priceRange);
@@ -175,15 +191,18 @@ export default function ListingsPage({}: Route.ComponentProps) {
     return () => clearTimeout(timer);
   }, [priceRange]);
 
+  {/* RESET TO FIRST PAGE ON FILTER/SORT/SEARCH CHANGE */}
   useEffect(() => {
     setPage(1);
     setTotalPages(1);
   }, [sortOption, selectedCategory, selectedCondition, debouncedPriceRange, searchTerm]);
 
+  {/* FETCH LISTINGS ON FILTER/SORT/SEARCH/PAGE CHANGE */}
   useEffect(() => {
     fetchListings(sortOption, page);
   }, [sortOption, page, selectedCategory, selectedCondition, debouncedPriceRange, searchTerm]);
 
+  {/* RENDERS THE MAIN CONTENT */}
   return (
     <main className="max-w-7xl mx-auto pt-[1rem] xl:px-0 px-4 pb-10">
       <h1 className="text-2xl font-semibold mb-4">Browse Listings</h1>

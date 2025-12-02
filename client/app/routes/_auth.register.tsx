@@ -3,20 +3,22 @@ import { useEffect, useState } from "react";
 import { Button, Card, Form, Input } from "@heroui/react";
 import { Link, useNavigate } from "react-router";
 import BackButton from "~/components/backbutton";
-import Notification from "~/components/notification";
 import api from "../api";
 import toast from "react-hot-toast";
 
+{/* REGISTRATION COMPONENT */}
 export default function Register() {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false); // disables submit while registering
+  const [loading, setLoading] = useState(false); // DISABLES BUTTON WHILE LOADING //
 
+  {/* HANDLES VISIBILITY TRANSITION */}
   useEffect(() => {
     const timeout = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timeout);
   }, []);
 
+  {/* HANDLES REGISTRATION FORM SUBMISSION */}
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -30,14 +32,14 @@ export default function Register() {
     const lastName = (formData.get("lastName") as string)?.trim() || null;
     const phoneNumber = (formData.get("phoneNumber") as string)?.trim() || null;
 
-    // Validate email
+    {/* VALIDATE EMAIL */}
     if (!email.endsWith("@ufl.edu")) {
       toast.error("Please use a valid @ufl.edu email address.");
       setLoading(false);
       return;
     }
 
-    // Validate password
+    {/* VALIDATE PASSWORD */}
     if (password !== confirmPassword) {
       toast.error("Passwords do not match.");
       setLoading(false);
@@ -45,7 +47,7 @@ export default function Register() {
     }
 
     try {
-      // Send registration request
+      {/* SEND REGISTRATION REQUEST */}
       const res = await api.post("/auth/register", {
         email,
         password,
@@ -66,12 +68,14 @@ export default function Register() {
     }
   };
 
+  {/* REGISTRATION RENDER */}
   return (
     <div
       className={`min-h-screen bg-gradient-to-tr from-orange-500 to-blue-500 flex items-center justify-center transition-opacity duration-1000 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
+      {/* REGISTRATION COMPONENT */}
       <main className="max-w-sm w-full px-4 flex flex-col gap-6">
         <BackButton />
         <Card className="p-6 shadow-lg bg-zinc-100 rounded-2xl animate-fadefloat">
@@ -79,7 +83,7 @@ export default function Register() {
             <h1 className="text-blue-950 font-medium text-2xl mb-1">Get started</h1>
             <p className="text-blue-950">Create an account to continue</p>
           </header>
-
+          {/* REGISTRATION FORM */}
           <Form className="flex flex-col gap-3 mt-3" onSubmit={handleRegister}>
             <Input label="Email" name="email" type="email" required size="sm" radius="sm" variant="bordered" />
             <Input label="First Name" name="firstName" type="text" size="sm" radius="sm" variant="bordered" />
@@ -94,6 +98,7 @@ export default function Register() {
           </Form>
         </Card>
 
+        {/* REGISTRATION FOOTER */}
         <footer>
           <p className="text-white text-sm text-center">
             By registering, you agree to our{" "}
@@ -102,6 +107,7 @@ export default function Register() {
           </p>
         </footer>
 
+        {/* REGISTRATION FOOTER */}
         <p className="text-white text-sm fixed bottom-4 left-1/2 -translate-x-1/2">
           Already have an account? <Link className="text-white underline" to={{ pathname: "/login" }}>Log In</Link>
         </p>

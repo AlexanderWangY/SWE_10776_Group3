@@ -6,6 +6,7 @@ import BackButton from "~/components/backbutton";
 import toast from "react-hot-toast";
 import api from "../api";
 
+{/* EMAIL VERIFICATION PAGE COMPONENT */}
 export default function VerifyEmail() {
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -16,11 +17,13 @@ export default function VerifyEmail() {
   const verificationToken = useMemo(() => searchParams.get("token")?.trim() ?? "", [searchParams]);
   const missingToken = verificationToken.length === 0;
 
+  {/* HANDLES VISIBILITY TRANSITION */}
   useEffect(() => {
     const timeout = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timeout);
   }, []);
 
+  {/* HANDLES EMAIL VERIFICATION */}
   const handleVerify = async () => {
     if (missingToken) {
       toast.error("Verification token is missing.");
@@ -42,14 +45,17 @@ export default function VerifyEmail() {
     }
   };
 
+  {/* RENDER */}
   return (
     <div
       className={`min-h-screen bg-gradient-to-tr from-orange-500 to-blue-500 flex items-center justify-center transition-opacity duration-1000 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
+      {/* EMAIL VERIFICATION COMPONENT */}
       <main className="max-w-sm w-full px-4 flex flex-col gap-6">
         <BackButton />
+        {/* EMAIL VERIFICATION FORM */}
         <Card className="p-6 shadow-lg bg-zinc-100 rounded-2xl animate-fadefloat">
           <header>
             <h1 className="text-blue-950 font-medium text-2xl mb-1 text-center">Verify your email</h1>

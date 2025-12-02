@@ -3,7 +3,7 @@ import type { Route } from "./+types/_app.listings_.$id";
 import { redirect } from "react-router";
 import { userContext } from "~/context";
 
-// LOADER 
+{/* LOADER */}
 export async function loader({ params, context }: Route.LoaderArgs) {
   const user = context.get(userContext);
 
@@ -15,7 +15,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
   return { listing: await res.json(), user };
 }
 
-// FORMATS PHONE NUMBER PRETTY
+{/* FORMATS PHONE NUMBER PRETTY */}
 function formatPhoneNumber(phone?: string | null) {
   if (!phone) return "No phone provided";
   const digits = phone.replace(/\D/g, "");
@@ -23,7 +23,7 @@ function formatPhoneNumber(phone?: string | null) {
   return `(${digits.slice(0, 3)})-${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-// ASSIGNS STATUSES TO COLORS FOR THE STATUS BADGE
+{/* ASSIGNS STATUSES TO COLORS FOR THE STATUS BADGE */}
 function getStatusColor(status: string) {
   switch (status.toLowerCase()) {
     case "active":
@@ -37,7 +37,7 @@ function getStatusColor(status: string) {
   }
 }
 
-// ASSIGNS CATEGORY COLORS
+{/* ASSIGNS CATEGORY COLORS */}
 function getCategoryColor(category: string) {
   switch (category.toLowerCase()) {
     default:
@@ -45,7 +45,7 @@ function getCategoryColor(category: string) {
   }
 }
 
-// ASSIGNS CONDITION COLORS
+{/* ASSIGNS CONDITION COLORS */}
 function getConditionColor(condition: string) {
   switch (condition.toLowerCase()) {
     case "new":
@@ -63,11 +63,12 @@ function getConditionColor(condition: string) {
   }
 }
 
-// FORMAT CATEGORY/CONDITION TEXT
+/* FORMAT CATEGORY/CONDITION TEXT */
 function formatLabel(text: string) {
   return text.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+{/* LISTING DETAILS PAGE COMPONENT */}
 export default function ListingDetails({ loaderData }: Route.ComponentProps) {
   const { listing } = loaderData;
 

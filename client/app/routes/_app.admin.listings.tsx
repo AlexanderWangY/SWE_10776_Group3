@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Route } from "./+types/_app.admin.listings";
 import { userContext } from "~/context";
 
+{/* LISTING INTERFACE */}
 interface Listing {
   id: number;
   title: string;
@@ -23,16 +24,20 @@ interface Listing {
   } | null;
 }
 
+{/* SORT FIELD AND ORDER TYPES */}
 type SortField = 'price' | 'created_at' | 'updated_at';
 type SortOrder = 'asc' | 'desc';
 
+{/* LOADER FUNCTION */}
 export async function loader({ context, request }: Route.LoaderArgs) {
   const user = context.get(userContext);
 
+  {/* AUTHENTICATION CHECK */}
   if (!user) {
     throw redirect(`/login?redirectTo=${request.url}`);
   }
 
+  {/* ADMIN CHECK */}
   if (!user.is_superuser) {
     throw redirect("/");
   }
@@ -40,6 +45,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   return null;
 }
 
+{/* ADMIN LISTINGS MANAGEMENT COMPONENT */}
 export default function AdminListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +53,7 @@ export default function AdminListingsPage() {
   const [sortBy, setSortBy] = useState<SortField>('created_at');
   const [order, setOrder] = useState<SortOrder>('desc');
 
+  {/* FETCH ALL LISTINGS WITH PAGINATION */}
   useEffect(() => {
     let cancelled = false;
     const fetchAllListings = async () => {
@@ -76,6 +83,7 @@ export default function AdminListingsPage() {
             break;
           }
         }
+        {/* MERGE DETAILED LISTING INFO */}
         if (!cancelled) {
           const listingsNeedingSeller = aggregated.filter((item) => {
             const first = item.seller?.first_name?.trim();
@@ -83,6 +91,7 @@ export default function AdminListingsPage() {
             return !first && !last;
           });
 
+          {/* FETCH DETAILED INFO FOR LISTINGS MISSING SELLER DATA */}
           if (listingsNeedingSeller.length > 0) {
             const detailTargets = listingsNeedingSeller.slice(0, 50);
             const detailFetches = await Promise.allSettled(
@@ -101,6 +110,7 @@ export default function AdminListingsPage() {
               })
             );
 
+            {/* MERGE DETAILED LISTING INFO */}
             detailFetches.forEach((result) => {
               if (result.status === 'fulfilled') {
                 const idx = aggregated.findIndex(
@@ -129,6 +139,7 @@ export default function AdminListingsPage() {
     return () => { cancelled = true; };
   }, [sortBy, order]);
 
+  {/* FORMATS PRICE FROM CENTS TO DOLLARS */}
   const formatPrice = (cents: number | null | undefined) => {
     if (cents == null) {
       return "N/A";
@@ -136,6 +147,7 @@ export default function AdminListingsPage() {
     return `$${(cents / 100).toFixed(2)}`;
   };
 
+  {/* FORMATS DATE PRETTY OR RETURNS FALLBACK */}
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) {
       return "Unknown";
@@ -143,6 +155,7 @@ export default function AdminListingsPage() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  {/* FORMATS PHONE NUMBER OR RETURNS FALLBACK */}
   const formatPhone = (phone: string | null | undefined) => {
     if (!phone) return "No phone";
     const digits = phone.replace(/\D/g, "");
@@ -152,6 +165,7 @@ export default function AdminListingsPage() {
     return phone;
   };
 
+  {/* ASSIGNS STATUS TO COLOR */}
   const getStatusColor = (status: string | null | undefined) => {
     switch ((status ?? "").toLowerCase()) {
       case 'active': return 'success';
@@ -162,8 +176,10 @@ export default function AdminListingsPage() {
     }
   };
 
+  {/* RENDER COMPONENT */}
   return (
     <main className="max-w-7xl mx-auto pt-8 px-4 pb-10">
+      {/* BREADCRUMBS */}
       <Breadcrumbs className="mb-4">
         <BreadcrumbItem href="/admin">Admin Dashboard</BreadcrumbItem>
         <BreadcrumbItem>Listing Management</BreadcrumbItem>
@@ -216,6 +232,7 @@ export default function AdminListingsPage() {
         </div>
       </div>
 
+      {/* LISTINGS TABLE */}
       <Card className="p-4">
         <CardHeader className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">All Listings</h2>
@@ -223,6 +240,7 @@ export default function AdminListingsPage() {
             {listings.length} Total Listings
           </Chip>
         </CardHeader>
+        {/* TABLE BODY */}
         <CardBody>
           {loading ? (
             <div className="flex justify-center py-8">

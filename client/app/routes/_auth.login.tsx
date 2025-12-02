@@ -7,10 +7,12 @@ import api from "../api";
 import toast from "react-hot-toast";
 import type { Route } from "./+types/_auth.login";
 
+{/* CLIENT LOADER FUNCTION */}
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   const url = new URL(request.url);
   const verified = url.searchParams.get("verified") || undefined;
 
+  {/* SHOWS SUCCESS TOAST IF EMAIL VERIFIED */}
   if (verified === "True") {
     toast.success("Email verified successfully! You can now log in.", {
       duration: 5000,
@@ -18,17 +20,20 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   }
 }
 
+{/* MAIN LOGIN COMPONENT */}
 export default function Login() {
   const [isVisible, setIsVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  {/* HANDLES LOGIN FORM SUBMISSION */}
   useEffect(() => {
     const timeout = setTimeout(() => setIsVisible(true), 100);
     return () => clearTimeout(timeout);
   }, []);
 
+  {/* HANDLES LOGIN FORM SUBMISSION */}
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -38,6 +43,7 @@ export default function Login() {
     const email = (formData.get("email") as string)?.trim();
     const password = formData.get("password") as string;
 
+    {/* HANDLES LOGIN FORM SUBMISSION */}
     try {
       const res = await api.post(
         "/auth/login",
@@ -51,6 +57,7 @@ export default function Login() {
         }
       );
 
+      {/* HANDLES LOGIN FORM SUBMISSION */}
       if (res.status === 204) {
         navigate("/listings");
       } else {
@@ -64,12 +71,14 @@ export default function Login() {
     }
   };
 
+  {/* LOGIN RENDER */}
   return (
     <div
       className={`min-h-screen bg-gradient-to-tr from-orange-500 to-blue-500 flex items-center justify-center transition-opacity duration-1000 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
+      {/* MAIN LOGIN COMPONENT */}
       <main className="max-w-sm w-full px-4 flex flex-col gap-6">
         <BackButton />
         <Card className="p-6 shadow-lg bg-zinc-100 rounded-2xl animate-fadefloat">
@@ -80,6 +89,7 @@ export default function Login() {
             <p className="text-blue-950">Login to continue to GatorMarket</p>
           </header>
 
+          {/* MAIN LOGIN FORM */}
           <Form className="flex flex-col gap-3 mt-3" onSubmit={handleLogin}>
             <Input
               label="Email"
@@ -115,6 +125,7 @@ export default function Login() {
           </Form>
         </Card>
 
+        {/* FOOTER WITH REGISTER LINK */}
         <p className="text-white text-sm fixed bottom-4 left-1/2 -translate-x-1/2">
           Don't have an account?{" "}
           <Link className="text-white underline" to="/register">
