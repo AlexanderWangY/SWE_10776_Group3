@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI
 from app.api.auth import router as auth_router
 from app.api.listings import router as listings_router
 from app.api.profile import router as profile_router
@@ -7,7 +7,6 @@ from app.api.about import router as about_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse, JSONResponse
 
 origins = [settings.base_url, settings.frontend_url]
 allow_origins = origins + [
@@ -17,6 +16,7 @@ allow_origins = origins + [
 
 app = FastAPI()
 
+# Setting up CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
@@ -36,18 +36,5 @@ app.include_router(about_router)
 async def read_root():
     return {"message": "Welcome to the FastAPI application!"}
 
-
+# For serving files on the web app, like profile and listing images.
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-# @app.exception_handler(HTTPException)
-# async def auth_http_handler(request: Request, exc: HTTPException):
-#     if exc.status_code == 400:
-#         if exc.detail == "User is already verified.":
-#             return RedirectResponse(url=f"{settings.frontend_url}/login?verified=True")
-#         elif exc.detail == "Invalid token or user does not exist.":
-#             return RedirectResponse(url=f"{settings.frontend_url}/register")
-#     elif exc.status_code == 401:
-#         return RedirectResponse(url=f"{settings.frontend_url}/login")
-#     return JSONResponse(
-#         status_code=exc.status_code,
-#         content={"message": exc.detail},
-#     )

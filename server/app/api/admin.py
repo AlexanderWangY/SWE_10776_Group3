@@ -1,15 +1,14 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from app.db.database import get_async_session
 from typing import Annotated, Optional
-from app.models.listing import Listing, ListingCategory, ListingCondition, ListingStatus
+from app.models.listing import Listing, ListingStatus
 from app.schemas.user import UserResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, asc, desc, func, update
-from sqlalchemy.orm import selectinload
 from app.models.user import User
 from app.auth.backend import fastapi_users
 from app.schemas.pagination import Pagination, SortEnum, pagination_params
-from app.schemas.listing import ListingResponse, UserListingResponse
+from app.schemas.listing import ListingResponse
 import uuid
 from app.api.listings import get_listings
 
@@ -21,6 +20,9 @@ async def deactivate_user_listings(
     async_session: AsyncSession = Depends(get_async_session),
     current_user = Depends(fastapi_users.current_user())
 ):
+    """
+    This function deactivates all listings for the selected user, used after banning a user.
+    """
     check_admin(current_user)
     async with async_session as session:
         statement = (
@@ -42,6 +44,9 @@ async def activate_user_listings(
     async_session: AsyncSession = Depends(get_async_session),
     current_user = Depends(fastapi_users.current_user())
 ):
+    """
+    This function activates all listings for the selected user, used after unbanning a user.
+    """
     check_admin(current_user)
     async with async_session as session:
         statement = (
@@ -58,6 +63,10 @@ async def activate_user_listings(
     
 
 def check_admin(user):
+    """
+    This function checks if the current user is an admin and raises a 403 Forbidden error if not
+    Used for admin-only actions
+    """
     if not user.is_superuser:
         raise HTTPException(status_code=403, detail="Must be administrator to access this page.")
     
@@ -78,6 +87,9 @@ async def get_listings_admin(
     keyword: Optional[str] = Query(None, description="Keyword to search in title or description"),
     current_user = Depends(fastapi_users.current_user())
 ):
+    """
+    This route retrieves listings for the administrator Listings Management page.
+    """
     check_admin(current_user)
     return await get_listings(
         pagination=pagination,
@@ -97,6 +109,10 @@ async def get_total_users(
     async_session: AsyncSession = Depends(get_async_session),
     current_user = Depends(fastapi_users.current_user())
 ):
+    """
+    This route retrieves the total number of users in the database.
+    It can be used for paginating users on the admin User Management page.
+    """
     check_admin(current_user)
     async with async_session as session:
         total = await session.scalar(select(func.count(User.id)))
@@ -108,6 +124,9 @@ async def get_user_by_id(
     async_session: AsyncSession = Depends(get_async_session),
     current_user = Depends(fastapi_users.current_user())
 ):
+    """
+    This route retrieves a user by their ID for admin use only.
+    """
     check_admin(current_user)
     async with async_session as session:
         statement = (
@@ -124,6 +143,9 @@ async def get_user_listings_by_id(
     async_session: AsyncSession = Depends(get_async_session),
     current_user = Depends(fastapi_users.current_user())
 ):
+    """
+    This route retrieves all the listings for a given user ID for admin use only.
+    """
     check_admin(current_user)
     async with async_session as session:
         statement = select(Listing).where(Listing.seller_id == user_id)
@@ -135,6 +157,11 @@ def check_ban_request(
     user: User,
     current_user = Depends(fastapi_users.current_user())
 ):
+    """
+    This function determines if the ban request is valid.
+    The ban request is not valid if the admin is trying to ban themselves or another admin.
+    Raises a 400 Bad Request error if the ban request is invalid.
+    """
     if current_user.id == user.id:
         raise HTTPException(status_code=400, detail="Administrators cannot ban themselves.")
     if user.is_superuser:
@@ -146,6 +173,9 @@ async def ban_user_by_id(
     async_session: AsyncSession = Depends(get_async_session),
     current_user = Depends(fastapi_users.current_user()),
 ):
+    """
+    This function bans a user using their id, for admin only.
+    """
     check_admin(current_user)
     result = await async_session.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -164,6 +194,9 @@ async def unban_user_by_id(
     async_session: AsyncSession = Depends(get_async_session),
     current_user = Depends(fastapi_users.current_user()),
 ):
+    """
+    This function reinstates a user's account using their id, for admin only.
+    """
     check_admin(current_user)
     result = await async_session.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -191,6 +224,9 @@ async def get_users(
     keyword: Optional[str] = Query(None, description="Keyword to search for user first name or last name")
 
 ):
+    """
+    This route retrieves all of the users in the database for the admin User Management page.
+    """
     check_admin(current_user)
     sort_fields = {
         "first_name": User.first_name,
@@ -208,9 +244,11 @@ async def get_users(
     if sort_order not in SortEnum:
         raise HTTPException(status_code=400, detail="Invalid order value. Must be 'asc' or 'desc'.")
     
+    # Accessing the database and retrieving the users.
     async with async_session as session:
         statement = select(User)
 
+        # Filtering users by active status
         if is_active:
             if is_active.lower() == "yes":
                 active_bool = True
@@ -220,6 +258,7 @@ async def get_users(
                 raise HTTPException(status_code=400, detail=f"Invalid is_active value '{is_active}'.")
             statement = statement.where(User.is_active == active_bool)
 
+        # Filtering users by admin status
         if is_admin:
             if is_admin.lower() == "yes":
                 admin_bool = True
@@ -228,7 +267,8 @@ async def get_users(
             else:
                 raise HTTPException(status_code=400, detail=f"Invalid is_admin value '{is_admin}'.")
             statement = statement.where(User.is_superuser == admin_bool)
-
+        
+        # Filtering users by verification status
         if is_verified:
             if is_verified.lower() == "yes":
                 verified_bool = True
@@ -238,6 +278,7 @@ async def get_users(
                 raise HTTPException(status_code=400, detail=f"Invalid is_verified value '{is_verified}'.")
             statement = statement.where(User.is_verified == verified_bool)
 
+        # Filtering users by keyword in first name or last name
         if keyword:
             search_filter = f"%{keyword}%"
             # Source: https://stackoverflow.com/questions/20363836/postgresql-ilike-query-with-sqlalchemy

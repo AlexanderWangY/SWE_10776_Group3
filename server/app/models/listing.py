@@ -6,6 +6,9 @@ from datetime import datetime, timezone
 import enum
 
 class ListingStatus(enum.Enum):
+    """
+    Enum representing the status of a listing.
+    """
     DRAFT = "DRAFT"
     ACTIVE = "ACTIVE"
     SOLD = "SOLD"
@@ -14,6 +17,9 @@ class ListingStatus(enum.Enum):
 
 # copilot autocomplete was used to help generate this enum
 class ListingCategory(enum.Enum):
+    """
+    Enum representing a listing's category.
+    """
     ELECTRONICS = "ELECTRONICS"
     SCHOOL_SUPPLIES = "SCHOOL_SUPPLIES"
     FURNITURE = "FURNITURE"
@@ -24,6 +30,9 @@ class ListingCategory(enum.Enum):
 
 # copilot autocomplete was used to help generate this enum
 class ListingCondition(enum.Enum):
+    """
+    Enum representing the item's condition.
+    """
     NEW = "NEW"
     LIKE_NEW = "LIKE_NEW"
     VERY_GOOD = "VERY_GOOD"
@@ -31,6 +40,9 @@ class ListingCondition(enum.Enum):
     USED = "USED"
 
 class Listing(Base):
+    """
+    Our database SQLAlchemy model for a listing.
+    """
     __tablename__ = "listing_table"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     seller_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"), nullable=False)

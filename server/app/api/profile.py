@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, status, HTTPException
-from app.auth.backend import fastapi_users, auth_backend
+from fastapi import APIRouter, Depends, HTTPException
+from app.auth.backend import fastapi_users
 from app.db.database import get_async_session, AsyncSession
 from app.schemas.user import CustomUserUpdate, UserResponse
 from app.models.listing import Listing
-from app.schemas.listing import ListingResponse, UserListingResponse
+from app.schemas.listing import ListingResponse
 from app.models.user import User
-from app.core.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_async_session
 from sqlalchemy import select
@@ -17,6 +16,9 @@ async def get_my_listings(
     async_session: AsyncSession = Depends(get_async_session),
     user: User = Depends(fastapi_users.current_user()),
 ):
+    """
+    Retrieve the currently authenticated user's listings.
+    """
     async with async_session as session:
         statement = select(Listing).where(Listing.seller_id == user.id)
         result = await session.scalars(statement)
@@ -28,6 +30,7 @@ async def get_my_listings(
 async def get_me(
       user: User = Depends(fastapi_users.current_user()),
 ):
+      """Retrieve the currently authenticated user's profile details."""
       return {
             "id": user.id,
             "email": user.email,
@@ -48,6 +51,9 @@ async def update_me(
     user: User = Depends(fastapi_users.current_user()),
     session: AsyncSession = Depends(get_async_session)
 ):
+    """
+    Update the currently authenticated user's profile details.
+    """
     user: User | None = await session.get(User, user.id)
     if not user:
         raise HTTPException(
@@ -58,6 +64,7 @@ async def update_me(
     for k, v in user_update.dict(exclude_unset=True).items():
         setattr(user, k, v)
 
+    # Saves the changes to the database.
     await session.commit()
     await session.refresh(user)
 
